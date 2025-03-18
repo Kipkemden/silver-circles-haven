@@ -85,7 +85,7 @@ const LandingPage = () => {
               }`}
               style={{ animationDelay: "0.4s" }}
             >
-              Expert-led support groups for adults 45-70. Connect with peers navigating retirement, dating, and life's transitions.
+              Real Support That Fits Your Life, Not Your Wallet
             </p>
             <div 
               className={`flex flex-col sm:flex-row justify-center gap-4 ${
@@ -107,8 +107,55 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Story Section - NEW */}
       <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="prose prose-lg max-w-none">
+              <p className="text-lg md:text-xl font-medium text-silver-800 mb-6">
+                Picture it: You're 60, retirement's knocking, and "What's next?" keeps you up. Or 67, eyeing a date, heart thumping with nerves. Therapy's a wallet-busting $150 a session—too stiff, too scary. Friends? They're MIA or miss the mark. You need a lifeline—someone to hear you out, lift you up, and say, "I've been there."
+              </p>
+              
+              <p className="text-lg text-silver-700 mb-6">
+                Meet Silver Circles. We're not therapy. We're not a casual coffee chat that fizzles out. We're small, online support groups built for you—45 to 70, tackling life's big shifts. Whether it's reinventing retirement or finding love later in life, you'll join 6-10 others who get it, guided by pros who've lived it: a retired therapist, a seasoned career coach, or an expert who's walked your path.
+              </p>
+              
+              <p className="text-lg text-silver-700 mb-10">
+                It's real talk, real support, and real understanding—for just $60 a month. Plus, it's all on Zoom—easy, cozy, from your couch. Therapy's $200 price tag? Not here.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-12">
+                <div className="bg-blue-50 p-6 rounded-xl">
+                  <blockquote className="border-l-4 border-primary pl-4 italic">
+                    <p className="text-silver-800">"I was drifting post-job. My circle, led by a retired exec, gave me clarity—and buddies who cheer me on."</p>
+                  </blockquote>
+                  <p className="font-medium text-right mt-4">— Joan, 64, in "Reinventing Retirement"</p>
+                </div>
+                
+                <div className="bg-blue-50 p-6 rounded-xl">
+                  <blockquote className="border-l-4 border-primary pl-4 italic">
+                    <p className="text-silver-800">"Dating at my age felt wild. My group, with a relationship pro, turned jitters into guts."</p>
+                  </blockquote>
+                  <p className="font-medium text-right mt-4">— Tom, 57, in "Silver Singles"</p>
+                </div>
+              </div>
+              
+              <p className="text-lg text-silver-700 mb-8">
+                Why Silver Circles? Because life after 45 isn't meant to be faced solo. Therapy can be too formal, too pricey—$200 sessions add up fast. Friends might not always show up. But our senior support groups are here, online, every week, blending expert wisdom with peer connection. It's your safe space to vent, dream, and grow—without breaking the bank.
+              </p>
+              
+              <div className="text-center mt-10">
+                <Button asChild size="lg" className="rounded-full px-8">
+                  <Link to="/onboarding">Join Your Circle Today</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-silver-50">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif font-medium mb-6 text-silver-900">
