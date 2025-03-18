@@ -13,8 +13,12 @@ import DashboardPage from "./pages/DashboardPage";
 import ForumPage from "./pages/ForumPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
+import SupportPage from "./pages/SupportPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// Mock API setup
+import { setupMockData } from "./services/api";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +26,9 @@ const queryClient = new QueryClient();
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Setup mock data on initial load
+    setupMockData();
   }, []);
   
   return null;
@@ -38,6 +45,7 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/forum/:forumType/:id?" element={<ForumPage />} />
+          <Route path="/support" element={<SupportPage />} />
           
           {/* Protected routes */}
           <Route 
