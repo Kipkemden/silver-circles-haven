@@ -95,6 +95,28 @@
   .compact-card {
     @apply p-4 md:p-6;
   }
+  
+  /* Full-width layout utilities */
+  .content-wide {
+    @apply max-w-6xl mx-auto;
+  }
+  
+  .content-extra-wide {
+    @apply max-w-7xl mx-auto;
+  }
+  
+  .content-full {
+    @apply w-full max-w-none;
+  }
+  
+  /* Grid layout utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6;
+  }
+  
+  .grid-wider {
+    @apply md:gap-8 lg:gap-10;
+  }
 }
 
 @keyframes fadeIn {
@@ -110,7 +132,7 @@
 
 /* Prose styling for story section */
 .prose {
-  max-width: 65ch;
+  max-width: 75ch;
   color: var(--tw-prose-body);
   line-height: 1.6;
 }

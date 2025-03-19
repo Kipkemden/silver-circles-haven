@@ -107,10 +107,10 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Story Section - Optimized spacing */}
+      {/* Story Section - Wider layout */}
       <section className="compact-section bg-white">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="content-wide mx-auto">
             <div className="prose prose-lg max-w-none">
               <p className="text-base md:text-lg font-medium text-silver-800 mb-4">
                 Picture it: You're 60, retirement's knocking, and "What's next?" keeps you up. Or 67, eyeing a date, heart thumping with nerves. Therapy's a wallet-busting $150 a session—too stiff, too scary. Friends? They're MIA or miss the mark. You need a lifeline—someone to hear you out, lift you up, and say, "I've been there."
@@ -166,7 +166,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-wide mx-auto">
             <div className="flex flex-col items-center text-center compact-card rounded-xl transition-all duration-300 hover:shadow-md">
               <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
                 <Users className="h-6 w-6 text-primary" />
@@ -200,7 +200,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Topic Cards Section - Compact */}
+      {/* Topic Cards Section - Compact with wider layout */}
       <section className="compact-section bg-silver-50">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center mb-8">
@@ -212,7 +212,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 content-wide mx-auto">
             <TopicCard
               title="Reinventing Retirement"
               description="Navigate the emotional and practical aspects of life after work. Find purpose, connection, and joy in your next chapter."
@@ -232,7 +232,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Public Forum Preview Section - Compact */}
+      {/* Public Forum Preview Section - Wider layout */}
       <section className="compact-section bg-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center mb-8">
@@ -244,7 +244,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="max-w-3xl mx-auto">
+          <div className="content-wide mx-auto">
             {publicPosts.map((post) => (
               <ForumPost key={post.id} post={post} isPublic={true} />
             ))}
@@ -320,7 +320,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section - Compact */}
+      {/* Testimonials Section - Wider layout */}
       <section className="compact-section bg-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center mb-8">
@@ -332,7 +332,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-wide mx-auto">
             <div className="bg-silver-50 p-5 rounded-2xl">
               <div className="flex items-center mb-3">
                 <img
