@@ -70,6 +70,31 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
+  
+  /* Compact spacing utility classes */
+  .compact-section {
+    @apply py-6 md:py-10;
+  }
+  
+  .compact-hero {
+    @apply pt-16 pb-6 md:pt-24 md:pb-10;
+  }
+  
+  .compact-title {
+    @apply mb-2 md:mb-4;
+  }
+  
+  .compact-subtitle {
+    @apply mb-4 md:mb-6;
+  }
+  
+  .compact-content {
+    @apply mb-6 md:mb-8;
+  }
+  
+  .compact-card {
+    @apply p-4 md:p-6;
+  }
 }
 
 @keyframes fadeIn {
@@ -87,17 +112,17 @@
 .prose {
   max-width: 65ch;
   color: var(--tw-prose-body);
-  line-height: 1.75;
+  line-height: 1.6;
 }
 
 .prose-lg {
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: 1.7;
 }
 
 .prose p {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
 }
 
 .prose blockquote {
@@ -106,4 +131,24 @@
   border-left-width: 0.25rem;
   border-left-color: var(--tw-prose-quote-borders);
   padding-left: 1em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+/* Mobile-optimized spacing */
+@media (max-width: 768px) {
+  .prose p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  
+  .prose blockquote {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+  }
+  
+  .prose-lg {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
 }
