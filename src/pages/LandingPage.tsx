@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import TopicCard from "@/components/TopicCard";
 import ForumPost from "@/components/ForumPost";
 import SubscriptionCTA from "@/components/SubscriptionCTA";
 
-// Sample data for public forum posts
 const publicPosts = [
   {
     id: "1",
@@ -107,10 +105,10 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Story Section - Wider layout */}
+      {/* Story Section - Centered with optimized width */}
       <section className="compact-section bg-white">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="content-wide mx-auto">
+          <div className="story-container">
             <div className="prose prose-lg max-w-none">
               <p className="text-base md:text-lg font-medium text-silver-800 mb-4">
                 Picture it: You're 60, retirement's knocking, and "What's next?" keeps you up. Or 67, eyeing a date, heart thumping with nerves. Therapy's a wallet-busting $150 a session—too stiff, too scary. Friends? They're MIA or miss the mark. You need a lifeline—someone to hear you out, lift you up, and say, "I've been there."

@@ -98,11 +98,17 @@
   
   /* Full-width layout utilities */
   .content-wide {
-    @apply max-w-6xl mx-auto;
+    @apply max-w-5xl mx-auto;
   }
   
   .content-extra-wide {
     @apply max-w-7xl mx-auto;
+  }
+  
+  /* Adjusted for story section specifically */
+  .story-container {
+    @apply w-[90%] md:w-[85%] lg:w-[80%] mx-auto;
+    max-width: 1100px;
   }
   
   .content-full {
@@ -132,7 +138,7 @@
 
 /* Prose styling for story section */
 .prose {
-  max-width: 75ch;
+  max-width: 85ch;
   color: var(--tw-prose-body);
   line-height: 1.6;
 }
