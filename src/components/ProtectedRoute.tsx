@@ -3,8 +3,13 @@ import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
-const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isBanned, isLoading } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactNode;
+  requireSubscription?: boolean;
+}
+
+const ProtectedRoute = ({ children, requireSubscription = false }: ProtectedRouteProps) => {
+  const { isAuthenticated, isBanned, isLoading, user } = useAuth();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -18,12 +23,19 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     );
   }
 
+  // Redirect to onboarding if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/onboarding" replace />;
   }
   
+  // Redirect banned users to support page
   if (isBanned) {
     return <Navigate to="/support" replace />;
+  }
+
+  // Check subscription status if required
+  if (requireSubscription && user && !user.isSubscribed) {
+    return <Navigate to="/subscription" replace />;
   }
 
   return <>{children}</>;
