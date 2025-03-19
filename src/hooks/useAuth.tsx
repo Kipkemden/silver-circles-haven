@@ -2,15 +2,18 @@
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
 import { api } from "@/services/api";
 import { toast } from "sonner";
+import { User } from "@/services/api";
 
 type AuthContextType = {
   isAuthenticated: boolean;
   isBanned: boolean;
   isLoading: boolean;
-  user: any | null;
+  user: User | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   toggleBan: (userId: string, shouldBan: boolean) => Promise<{ success: boolean; error?: string }>;
+  register: (userData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (userId: string, data: Partial<User>) => Promise<{ success: boolean; error?: string, user?: User }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,7 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isBanned, setIsBanned] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Check if user is already authenticated on mount
@@ -27,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       
       try {
-        // In a real app, this would check session with Supabase
+        // Use the API service to check auth status
         const authStatus = localStorage.getItem("isAuthenticated") === "true";
         const banStatus = localStorage.getItem("isBanned") === "true";
         const currentUser = api.auth.getCurrentUser();
@@ -63,6 +66,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated(true);
         setIsBanned(user.isBanned || false);
         setUser(user);
+        
+        // Store authentication state in localStorage
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("isBanned", user.isBanned ? "true" : "false");
+        
         toast.success("Login successful!");
         return { success: true };
       }
@@ -85,12 +93,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(false);
       setIsBanned(false);
       setUser(null);
+      
+      // Clear authentication state from localStorage
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("isBanned");
+      localStorage.removeItem("currentUser");
+      
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Logout failed. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const register = async (userData: Partial<User>) => {
+    try {
+      setIsLoading(true);
+      const { user, error } = await api.auth.signUp(userData);
+      
+      if (error) {
+        toast.error(error);
+        return { success: false, error };
+      }
+      
+      if (user) {
+        setIsAuthenticated(true);
+        setIsBanned(false);
+        setUser(user);
+        
+        // Store authentication state in localStorage
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("isBanned", "false");
+        
+        toast.success("Registration successful!");
+        return { success: true };
+      }
+      
+      return { success: false, error: "Registration failed" };
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Registration failed. Please try again.");
+      return { success: false, error: "Registration failed" };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateProfile = async (userId: string, data: Partial<User>) => {
+    try {
+      const { data: updatedUser, error } = await api.users.update(userId, data);
+      
+      if (error) {
+        toast.error(error);
+        return { success: false, error };
+      }
+      
+      if (updatedUser && user && user.id === userId) {
+        setUser(updatedUser);
+        toast.success("Profile updated successfully!");
+        return { success: true, user: updatedUser };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error("Profile update failed. Please try again.");
+      return { success: false, error: "Profile update failed" };
     }
   };
 
@@ -118,7 +188,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     login,
     logout,
-    toggleBan
+    toggleBan,
+    register,
+    updateProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

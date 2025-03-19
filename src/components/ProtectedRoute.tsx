@@ -6,9 +6,14 @@ import { useAuth } from "@/hooks/useAuth";
 interface ProtectedRouteProps {
   children: ReactNode;
   requireSubscription?: boolean;
+  adminOnly?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireSubscription = false }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ 
+  children, 
+  requireSubscription = false,
+  adminOnly = false
+}: ProtectedRouteProps) => {
   const { isAuthenticated, isBanned, isLoading, user } = useAuth();
 
   // Show loading state while checking authentication
@@ -36,6 +41,11 @@ const ProtectedRoute = ({ children, requireSubscription = false }: ProtectedRout
   // Check subscription status if required
   if (requireSubscription && user && !user.isSubscribed) {
     return <Navigate to="/subscription" replace />;
+  }
+
+  // Check admin status if required
+  if (adminOnly && user && !user.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

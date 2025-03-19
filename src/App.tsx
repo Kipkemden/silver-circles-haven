@@ -64,7 +64,22 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <AdminPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/subscription"
+            element={
+              <ProtectedRoute>
+                <SupportPage />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
