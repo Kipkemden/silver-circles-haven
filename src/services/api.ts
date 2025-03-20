@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // Mock user types
@@ -12,6 +11,8 @@ export interface User {
   isSubscribed: boolean;
   groupId?: string;
   isBanned: boolean;
+  isAdmin?: boolean;
+  password?: string; // Only used for registration
 }
 
 export interface Group {
@@ -57,6 +58,8 @@ const mockUsers: User[] = [
     isSubscribed: true,
     groupId: "g1",
     isBanned: false,
+    isAdmin: false,
+    password: "password123"
   },
   {
     id: "u2",
@@ -68,6 +71,8 @@ const mockUsers: User[] = [
     isSubscribed: true,
     groupId: "g3",
     isBanned: false,
+    isAdmin: false,
+    password: "password456"
   },
   {
     id: "u3",
@@ -79,6 +84,8 @@ const mockUsers: User[] = [
     isSubscribed: true,
     groupId: "g2",
     isBanned: false,
+    isAdmin: false,
+    password: "password789"
   },
   {
     id: "u4",
@@ -90,6 +97,8 @@ const mockUsers: User[] = [
     isSubscribed: false,
     groupId: "g4",
     isBanned: true,
+    isAdmin: false,
+    password: "password101"
   },
   {
     id: "u5",
@@ -101,6 +110,8 @@ const mockUsers: User[] = [
     isSubscribed: true,
     groupId: "g1",
     isBanned: false,
+    isAdmin: false,
+    password: "password112"
   },
 ];
 
@@ -244,6 +255,8 @@ export const api = {
         goals: userData.goals || [],
         isSubscribed: false,
         isBanned: false,
+        isAdmin: false,
+        password: "password123"
       };
       
       mockUsers.push(newUser as User);

@@ -1,19 +1,20 @@
 
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
-import { api } from "@/services/api";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User } from "@/services/api";
+import { User as ApiUser } from "@/services/api";
+import { User, Session } from "@supabase/supabase-js";
 
 type AuthContextType = {
   isAuthenticated: boolean;
   isBanned: boolean;
   isLoading: boolean;
-  user: User | null;
+  user: ApiUser | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   toggleBan: (userId: string, shouldBan: boolean) => Promise<{ success: boolean; error?: string }>;
-  register: (userData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
-  updateProfile: (userId: string, data: Partial<User>) => Promise<{ success: boolean; error?: string, user?: User }>;
+  register: (userData: Partial<ApiUser>) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (userId: string, data: Partial<ApiUser>) => Promise<{ success: boolean; error?: string, user?: ApiUser }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,7 +23,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isBanned, setIsBanned] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ApiUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+
+  // Load and transform Supabase user to our API User format
+  const transformSupabaseUser = async (supabaseUser: User | null): Promise<ApiUser | null> => {
+    if (!supabaseUser) return null;
+    
+    try {
+      // Fetch the user's profile from our profiles table
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return null;
+      }
+      
+      // Transform to our API User format
+      const apiUser: ApiUser = {
+        id: supabaseUser.id,
+        name: profile.name || supabaseUser.email?.split('@')[0] || '',
+        email: supabaseUser.email || '',
+        age: profile.age || 0,
+        topic: profile.topic || '',
+        goals: profile.goals || [],
+        isSubscribed: profile.is_subscribed || false,
+        groupId: profile.group_id || undefined,
+        isBanned: profile.is_banned || false,
+      };
+      
+      return apiUser;
+    } catch (error) {
+      console.error("Error transforming user:", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Check if user is already authenticated on mount
@@ -30,14 +69,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       
       try {
-        // Use the API service to check auth status
-        const authStatus = localStorage.getItem("isAuthenticated") === "true";
-        const banStatus = localStorage.getItem("isBanned") === "true";
-        const currentUser = api.auth.getCurrentUser();
+        // Set up auth state listener FIRST
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            setSession(session);
+            
+            if (session) {
+              const apiUser = await transformSupabaseUser(session.user);
+              setUser(apiUser);
+              setIsAuthenticated(true);
+              setIsBanned(apiUser?.isBanned || false);
+            } else {
+              setUser(null);
+              setIsAuthenticated(false);
+              setIsBanned(false);
+            }
+          }
+        );
+
+        // THEN check for existing session
+        const { data: { session } } = await supabase.auth.getSession();
         
-        setIsAuthenticated(authStatus);
-        setIsBanned(banStatus);
-        setUser(currentUser);
+        if (session) {
+          setSession(session);
+          const apiUser = await transformSupabaseUser(session.user);
+          setUser(apiUser);
+          setIsAuthenticated(true);
+          setIsBanned(apiUser?.isBanned || false);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsBanned(false);
+        }
+
+        return () => subscription.unsubscribe();
       } catch (error) {
         console.error("Auth status check failed:", error);
         // Reset auth state if check fails
@@ -55,31 +120,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { user, error } = await api.auth.signIn(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
       if (error) {
-        toast.error(error);
-        return { success: false, error };
+        toast.error(error.message);
+        return { success: false, error: error.message };
       }
       
-      if (user) {
-        setIsAuthenticated(true);
-        setIsBanned(user.isBanned || false);
-        setUser(user);
+      if (data.user) {
+        const apiUser = await transformSupabaseUser(data.user);
         
-        // Store authentication state in localStorage
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("isBanned", user.isBanned ? "true" : "false");
-        
-        toast.success("Login successful!");
-        return { success: true };
+        if (apiUser) {
+          setIsAuthenticated(true);
+          setIsBanned(apiUser.isBanned || false);
+          setUser(apiUser);
+          
+          toast.success("Login successful!");
+          return { success: true };
+        }
       }
       
       return { success: false, error: "Login failed" };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       toast.error("Login failed. Please try again.");
-      return { success: false, error: "Login failed" };
+      return { success: false, error: error.message || "Login failed" };
     } finally {
       setIsLoading(false);
     }
@@ -88,19 +156,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await api.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
       
       setIsAuthenticated(false);
       setIsBanned(false);
       setUser(null);
-      
-      // Clear authentication state from localStorage
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("isBanned");
-      localStorage.removeItem("currentUser");
+      setSession(null);
       
       toast.success("Logged out successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Logout error:", error);
       toast.error("Logout failed. Please try again.");
     } finally {
@@ -108,76 +176,132 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (userData: Partial<User>) => {
+  const register = async (userData: Partial<ApiUser>) => {
     try {
       setIsLoading(true);
-      const { user, error } = await api.auth.signUp(userData);
+      
+      // Register with Supabase auth
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email || '',
+        password: userData.password as string || '', // Cast to string as it might be coming from a different type
+        options: {
+          data: {
+            name: userData.name,
+          },
+        },
+      });
       
       if (error) {
-        toast.error(error);
-        return { success: false, error };
+        toast.error(error.message);
+        return { success: false, error: error.message };
       }
       
-      if (user) {
-        setIsAuthenticated(true);
-        setIsBanned(false);
-        setUser(user);
+      if (data.user) {
+        // Update the profile with additional information
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            name: userData.name,
+            age: userData.age,
+            topic: userData.topic,
+            goals: userData.goals,
+          })
+          .eq('id', data.user.id);
         
-        // Store authentication state in localStorage
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("isBanned", "false");
+        if (profileError) {
+          console.error("Error updating profile:", profileError);
+          // Continue anyway as the user is created
+        }
         
-        toast.success("Registration successful!");
-        return { success: true };
+        const apiUser = await transformSupabaseUser(data.user);
+        
+        if (apiUser) {
+          setIsAuthenticated(true);
+          setIsBanned(false);
+          setUser(apiUser);
+          
+          toast.success("Registration successful!");
+          return { success: true };
+        }
       }
       
       return { success: false, error: "Registration failed" };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
       toast.error("Registration failed. Please try again.");
-      return { success: false, error: "Registration failed" };
+      return { success: false, error: error.message || "Registration failed" };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const updateProfile = async (userId: string, data: Partial<User>) => {
+  const updateProfile = async (userId: string, data: Partial<ApiUser>) => {
     try {
-      const { data: updatedUser, error } = await api.users.update(userId, data);
+      // Update the profile in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: data.name,
+          email: data.email,
+          age: data.age,
+          topic: data.topic,
+          goals: data.goals,
+          is_subscribed: data.isSubscribed,
+          group_id: data.groupId,
+          is_banned: data.isBanned,
+        })
+        .eq('id', userId);
       
       if (error) {
-        toast.error(error);
-        return { success: false, error };
+        toast.error(error.message);
+        return { success: false, error: error.message };
       }
       
-      if (updatedUser && user && user.id === userId) {
-        setUser(updatedUser);
-        toast.success("Profile updated successfully!");
-        return { success: true, user: updatedUser };
+      // If updating the current user, refresh the user state
+      if (user && user.id === userId) {
+        const currentUser = await supabase.auth.getUser();
+        if (currentUser.data.user) {
+          const updatedApiUser = await transformSupabaseUser(currentUser.data.user);
+          if (updatedApiUser) {
+            setUser(updatedApiUser);
+            toast.success("Profile updated successfully!");
+            return { success: true, user: updatedApiUser };
+          }
+        }
       }
       
+      toast.success("Profile updated successfully!");
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Profile update error:", error);
       toast.error("Profile update failed. Please try again.");
-      return { success: false, error: "Profile update failed" };
+      return { success: false, error: error.message || "Profile update failed" };
     }
   };
 
   const toggleBan = async (userId: string, shouldBan: boolean) => {
     try {
-      const { success, error, data } = await api.users.toggleBan(userId, shouldBan);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_banned: shouldBan })
+        .eq('id', userId);
       
-      // If the banned user is the current user, update the state
-      if (success && user && user.id === userId) {
-        setIsBanned(shouldBan);
-        localStorage.setItem("isBanned", shouldBan ? "true" : "false");
+      if (error) {
+        toast.error(error.message);
+        return { success: false, error: error.message };
       }
       
-      return { success, error: error ? String(error) : undefined };
-    } catch (error) {
+      // If the banned user is the current user, update the state
+      if (user && user.id === userId) {
+        setIsBanned(shouldBan);
+        setUser({ ...user, isBanned: shouldBan });
+      }
+      
+      toast.success(`User ${shouldBan ? "banned" : "unbanned"} successfully`);
+      return { success: true };
+    } catch (error: any) {
       console.error("Ban toggle error:", error);
-      return { success: false, error: "Failed to update ban status" };
+      return { success: false, error: error.message || "Failed to update ban status" };
     }
   };
 
