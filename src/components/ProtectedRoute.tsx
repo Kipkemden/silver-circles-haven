@@ -1,6 +1,6 @@
 
-import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { ReactNode, useEffect } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ProtectedRouteProps {
@@ -15,6 +15,7 @@ const ProtectedRoute = ({
   adminOnly = false
 }: ProtectedRouteProps) => {
   const { isAuthenticated, isBanned, isLoading, user } = useAuth();
+  const location = useLocation();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -28,9 +29,9 @@ const ProtectedRoute = ({
     );
   }
 
-  // Redirect to onboarding if not authenticated
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
   
   // Redirect banned users to support page

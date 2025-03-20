@@ -26,35 +26,35 @@ import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-// Mock function to simulate Stripe checkout
-const redirectToStripeCheckout = (userData: any) => {
-  console.log("Redirecting to Stripe with user data:", userData);
-  
-  // In a real implementation, this would redirect to Stripe
-  // For demo, we'll just set authenticated in localStorage
-  localStorage.setItem("isAuthenticated", "true");
-  localStorage.setItem("userData", JSON.stringify(userData));
-  
-  return Promise.resolve();
-};
+import { useAuth } from "@/hooks/useAuth";
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login, register, isAuthenticated } = useAuth();
   const searchParams = new URLSearchParams(location.search);
   const preselectedTopic = searchParams.get("topic");
   
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     age: "",
     topic: preselectedTopic || "",
     goals: "",
     plan: "monthly", // monthly or yearly
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Redirect authenticated users away from the onboarding page
+  useState(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  });
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -79,6 +79,18 @@ const OnboardingPage = () => {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email";
+    }
+    
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
     
     if (!formData.age.trim()) {
@@ -128,11 +140,66 @@ const OnboardingPage = () => {
 
   const handleSubmit = async () => {
     try {
-      await redirectToStripeCheckout(formData);
+      setIsLoading(true);
+      
+      // Register the user with Supabase
+      const { success, error } = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        age: parseInt(formData.age),
+        topic: formData.topic,
+        goals: [formData.goals],
+        isSubscribed: formData.plan === "yearly", // Just for demo, set as subscribed if yearly plan
+      });
+      
+      if (!success) {
+        if (error && error.includes("already registered")) {
+          setStep(1);
+          setErrors({ email: "This email is already registered. Please login instead." });
+          toast.error("Account already exists. Please use the login form.");
+        } else {
+          toast.error(error || "Registration failed. Please try again.");
+        }
+        return;
+      }
+      
       toast.success("Welcome to Silver Circles!");
       navigate("/dashboard");
+    } catch (error: any) {
+      toast.error("There was an error during signup. Please try again.");
+      console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginInstead = async () => {
+    try {
+      setIsLoading(true);
+      
+      if (!formData.email || !formData.password) {
+        setErrors({
+          email: !formData.email ? "Email is required" : "",
+          password: !formData.password ? "Password is required" : "",
+        });
+        return;
+      }
+      
+      const { success, error } = await login(formData.email, formData.password);
+      
+      if (!success) {
+        toast.error(error || "Login failed. Please check your credentials.");
+        return;
+      }
+      
+      toast.success("Welcome back to Silver Circles!");
+      navigate("/dashboard");
     } catch (error) {
-      toast.error("There was an error processing your payment. Please try again.");
+      toast.error("Login failed. Please try again.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -207,6 +274,36 @@ const OnboardingPage = () => {
                     </div>
                     
                     <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Create a password"
+                        value={formData.password}
+                        onChange={(e) => updateFormData("password", e.target.value)}
+                        className={cn(errors.password && "border-destructive")}
+                      />
+                      {errors.password && (
+                        <p className="text-destructive text-sm">{errors.password}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Confirm your password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                        className={cn(errors.confirmPassword && "border-destructive")}
+                      />
+                      {errors.confirmPassword && (
+                        <p className="text-destructive text-sm">{errors.confirmPassword}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
                       <Label htmlFor="age">Age (45-70)</Label>
                       <Input
                         id="age"
@@ -221,6 +318,19 @@ const OnboardingPage = () => {
                       {errors.age && (
                         <p className="text-destructive text-sm">{errors.age}</p>
                       )}
+                    </div>
+                    
+                    <div className="text-sm text-silver-500 pt-2">
+                      <p>Already have an account? 
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto ml-1 text-primary"
+                          onClick={handleLoginInstead}
+                          disabled={isLoading}
+                        >
+                          Login instead
+                        </Button>
+                      </p>
                     </div>
                   </CardContent>
                 </>
@@ -343,6 +453,7 @@ const OnboardingPage = () => {
                     variant="outline"
                     onClick={prevStep}
                     className="flex items-center"
+                    disabled={isLoading}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
@@ -352,14 +463,24 @@ const OnboardingPage = () => {
                 )}
                 
                 {step < 3 ? (
-                  <Button type="button" onClick={nextStep} className="flex items-center">
+                  <Button 
+                    type="button" 
+                    onClick={nextStep} 
+                    className="flex items-center"
+                    disabled={isLoading}
+                  >
                     Continue
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="button" onClick={handleSubmit} className="flex items-center">
-                    Complete Signup
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  <Button 
+                    type="button" 
+                    onClick={handleSubmit} 
+                    className="flex items-center"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Complete Signup"}
+                    {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
                 )}
               </CardFooter>
