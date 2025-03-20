@@ -44,13 +44,8 @@ const ProtectedRoute = ({
   }
 
   // Check admin status if required
-  if (adminOnly && user) {
-    // Check if user is admin
-    // This will be properly implemented when we fetch the user profile from Supabase
-    const isAdmin = user.isAdmin; // We'll add this property to the User type
-    if (!isAdmin) {
-      return <Navigate to="/dashboard" replace />;
-    }
+  if (adminOnly && user && !user.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

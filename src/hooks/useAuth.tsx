@@ -19,6 +19,9 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Type assertion to work around TypeScript issues with Supabase tables
+const profilesTable = 'profiles' as any;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isBanned, setIsBanned] = useState<boolean>(false);
@@ -33,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Fetch the user's profile from our profiles table
       const { data: profile, error } = await supabase
-        .from('profiles')
+        .from(profilesTable)
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
@@ -43,17 +46,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
       
-      // Transform to our API User format
+      // Transform to our API User format with null checks
       const apiUser: ApiUser = {
         id: supabaseUser.id,
-        name: profile.name || supabaseUser.email?.split('@')[0] || '',
+        name: profile?.name || supabaseUser.email?.split('@')[0] || '',
         email: supabaseUser.email || '',
-        age: profile.age || 0,
-        topic: profile.topic || '',
-        goals: profile.goals || [],
-        isSubscribed: profile.is_subscribed || false,
-        groupId: profile.group_id || undefined,
-        isBanned: profile.is_banned || false,
+        age: profile?.age || 0,
+        topic: profile?.topic || '',
+        goals: profile?.goals || [],
+        isSubscribed: profile?.is_subscribed || false,
+        groupId: profile?.group_id || undefined,
+        isBanned: profile?.is_banned || false,
+        isAdmin: profile?.is_admin || false,
       };
       
       return apiUser;
@@ -199,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data.user) {
         // Update the profile with additional information
         const { error: profileError } = await supabase
-          .from('profiles')
+          .from(profilesTable)
           .update({
             name: userData.name,
             age: userData.age,
@@ -239,7 +243,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Update the profile in Supabase
       const { error } = await supabase
-        .from('profiles')
+        .from(profilesTable)
         .update({
           name: data.name,
           email: data.email,
@@ -282,7 +286,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const toggleBan = async (userId: string, shouldBan: boolean) => {
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from(profilesTable)
         .update({ is_banned: shouldBan })
         .eq('id', userId);
       
