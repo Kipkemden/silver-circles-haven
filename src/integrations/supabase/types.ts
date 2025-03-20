@@ -9,7 +9,259 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string | null
+          facilitator_id: string
+          facilitator_name: string
+          id: string
+          member_count: number | null
+          name: string
+          schedule: string
+          zoom_link: string
+        }
+        Insert: {
+          created_at?: string | null
+          facilitator_id: string
+          facilitator_name: string
+          id: string
+          member_count?: number | null
+          name: string
+          schedule: string
+          zoom_link: string
+        }
+        Update: {
+          created_at?: string | null
+          facilitator_id?: string
+          facilitator_name?: string
+          id?: string
+          member_count?: number | null
+          name?: string
+          schedule?: string
+          zoom_link?: string
+        }
+        Relationships: []
+      }
+      likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          created_at: string | null
+          date: string
+          group_id: string
+          group_name: string
+          id: string
+          topic: string
+          zoom_link: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          group_id: string
+          group_name: string
+          id: string
+          topic: string
+          zoom_link: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          group_id?: string
+          group_name?: string
+          id?: string
+          topic?: string
+          zoom_link?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          forum_type: string | null
+          group_id: string | null
+          id: string
+          is_public: boolean | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          forum_type?: string | null
+          group_id?: string | null
+          id: string
+          is_public?: boolean | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          forum_type?: string | null
+          group_id?: string | null
+          id?: string
+          is_public?: boolean | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age: number
+          created_at: string | null
+          email: string
+          goals: string[] | null
+          group_id: string | null
+          id: string
+          is_admin: boolean | null
+          is_banned: boolean | null
+          is_subscribed: boolean | null
+          name: string
+          topic: string
+        }
+        Insert: {
+          age: number
+          created_at?: string | null
+          email: string
+          goals?: string[] | null
+          group_id?: string | null
+          id: string
+          is_admin?: boolean | null
+          is_banned?: boolean | null
+          is_subscribed?: boolean | null
+          name: string
+          topic: string
+        }
+        Update: {
+          age?: number
+          created_at?: string | null
+          email?: string
+          goals?: string[] | null
+          group_id?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_banned?: boolean | null
+          is_subscribed?: boolean | null
+          name?: string
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_group"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
