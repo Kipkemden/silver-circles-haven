@@ -99,8 +99,11 @@ const LoginPage = () => {
     try {
       setIsLoading(true);
       
+      // Use the current origin for the redirect URL
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
       
       if (error) {

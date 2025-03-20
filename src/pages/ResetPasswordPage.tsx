@@ -27,14 +27,32 @@ const ResetPasswordPage = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasValidResetToken, setHasValidResetToken] = useState(false);
 
   useEffect(() => {
     // Check if we have a valid hash in the URL
-    const hash = window.location.hash;
-    if (!hash || !hash.includes('type=recovery')) {
-      toast.error("Invalid or expired password reset link");
-      navigate("/login");
-    }
+    const checkResetToken = async () => {
+      const hash = window.location.hash;
+      
+      if (!hash || !hash.includes('type=recovery')) {
+        toast.error("Invalid or expired password reset link");
+        navigate("/login");
+        return;
+      }
+      
+      // Verify hash is valid with Supabase
+      const { error } = await supabase.auth.getSession();
+      
+      if (error) {
+        toast.error("Invalid or expired password reset link");
+        navigate("/login");
+        return;
+      }
+      
+      setHasValidResetToken(true);
+    };
+    
+    checkResetToken();
   }, [navigate]);
 
   const updateFormData = (field: string, value: string) => {
@@ -84,7 +102,9 @@ const ResetPasswordPage = () => {
       }
       
       toast.success("Your password has been successfully reset!");
-      setTimeout(() => navigate("/login"), 2000);
+      
+      // Redirect to profile page after successful password reset
+      setTimeout(() => navigate("/profile"), 1500);
     } catch (error) {
       toast.error("Failed to reset password. Please try again.");
       console.error("Reset password error:", error);
@@ -92,6 +112,21 @@ const ResetPasswordPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (!hasValidResetToken) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center p-6">
+            <h2 className="text-2xl font-serif mb-2">Verifying reset link...</h2>
+            <p className="text-silver-600">Please wait while we verify your password reset link.</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
