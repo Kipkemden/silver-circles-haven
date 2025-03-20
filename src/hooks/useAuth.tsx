@@ -20,8 +20,9 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Use type assertion to work around TypeScript issues
+// Explicitly cast to any to bypass type checking for Supabase table operations
 const query = (table: string) => {
-  return supabase.from(table) as any;
+  return supabase.from(table as never) as any;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
