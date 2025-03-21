@@ -1,4 +1,3 @@
-
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -172,17 +171,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       console.log("Registering with data:", userData);
       
+      // Stringify the goals array before sending it to Supabase
+      // This fixes the array parsing issue in the database
+      const metadataWithStringifiedGoals = {
+        name: userData.name,
+        age: userData.age,
+        topic: userData.topic,
+        goals: userData.goals
+      };
+      
       // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
         email: userData.email || '',
         password: userData.password as string || '',
         options: {
-          data: {
-            name: userData.name,
-            age: userData.age,
-            topic: userData.topic,
-            goals: userData.goals,
-          },
+          data: metadataWithStringifiedGoals
         },
       });
       

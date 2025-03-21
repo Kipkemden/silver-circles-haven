@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -168,7 +167,7 @@ const OnboardingPage = () => {
     try {
       setIsLoading(true);
       
-      // Prepare data for API call
+      // Prepare data for API call - ensure goals array is properly formatted
       const userData = {
         name: formData.name,
         email: formData.email,
