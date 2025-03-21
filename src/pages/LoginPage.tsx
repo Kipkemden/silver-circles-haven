@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // Added useEffect
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth(); // Renamed to authLoading for clarity
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -29,16 +29,20 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Debug: Log isAuthenticated value
+  console.log("LoginPage - isAuthenticated:", isAuthenticated);
+
   // Redirect authenticated users to dashboard
   useEffect(() => {
+    console.log("useEffect running - isAuthenticated:", isAuthenticated);
     if (isAuthenticated) {
-      navigate("/dashboard");
+      console.log("Redirecting to /dashboard");
+      navigate("/dashboard", { replace: true }); // replace: true prevents back navigation to login
     }
-  }, [isAuthenticated, navigate]); // Dependencies ensure this runs when isAuthenticated changes
+  }, [isAuthenticated, navigate]);
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when field is updated
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -50,34 +54,30 @@ const LoginPage = () => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email";
     }
-    
     if (!resetPasswordMode && !formData.password) {
       newErrors.password = "Password is required";
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async () => {
     if (!validateForm()) return;
-    
+
     try {
       const { success, error } = await login(formData.email, formData.password);
-      
+      console.log("handleLogin - Login result:", { success, error });
       if (!success) {
         toast.error(error || "Login failed. Please check your credentials.");
         return;
       }
-      
       toast.success("Welcome back to Silver Circles!");
-      navigate("/dashboard");
+      // Removed navigate("/dashboard") from here - let useEffect handle it
     } catch (error: any) {
       toast.error("Login failed. Please try again.");
       console.error("Login error:", error);
@@ -89,21 +89,16 @@ const LoginPage = () => {
       setErrors({ email: "Please enter a valid email" });
       return;
     }
-    
     try {
-      // Use the current origin for the redirect URL
       const redirectUrl = `${window.location.origin}/reset-password`;
-      
       const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
         redirectTo: redirectUrl,
       });
-      
       if (error) {
         toast.error("Failed to send reset password email. Please try again.");
         console.error("Reset password error:", error);
         return;
       }
-      
       toast.success("Password reset email sent! Please check your inbox.");
       setResetPasswordMode(false);
     } catch (error) {
@@ -115,7 +110,6 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
       <div className="flex-grow py-32 bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-md mx-auto">
@@ -125,7 +119,7 @@ const LoginPage = () => {
                   {resetPasswordMode ? "Reset Password" : "Welcome Back"}
                 </CardTitle>
                 <CardDescription>
-                  {resetPasswordMode 
+                  {resetPasswordMode
                     ? "Enter your email to receive a password reset link"
                     : "Sign in to your Silver Circles account"}
                 </CardDescription>
@@ -145,13 +139,12 @@ const LoginPage = () => {
                     <p className="text-destructive text-sm">{errors.email}</p>
                   )}
                 </div>
-                
                 {!resetPasswordMode && (
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="password">Password</Label>
-                      <Button 
-                        variant="link" 
+                      <Button
+                        variant="link"
                         className="p-0 h-auto text-xs text-primary"
                         onClick={() => setResetPasswordMode(true)}
                       >
@@ -175,17 +168,17 @@ const LoginPage = () => {
               <CardFooter className="flex flex-col space-y-4">
                 {resetPasswordMode ? (
                   <>
-                    <Button 
-                      type="button" 
-                      onClick={handleResetPassword} 
+                    <Button
+                      type="button"
+                      onClick={handleResetPassword}
                       className="w-full flex items-center justify-center"
-                      disabled={authLoading} // Use authLoading here
+                      disabled={authLoading}
                     >
                       {authLoading ? "Sending..." : "Send Reset Link"}
                       {!authLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                     </Button>
-                    <Button 
-                      variant="link" 
+                    <Button
+                      variant="link"
                       className="p-0 h-auto text-primary"
                       onClick={() => setResetPasswordMode(false)}
                       disabled={authLoading}
@@ -195,11 +188,11 @@ const LoginPage = () => {
                   </>
                 ) : (
                   <>
-                    <Button 
-                      type="button" 
-                      onClick={handleLogin} 
+                    <Button
+                      type="button"
+                      onClick={handleLogin}
                       className="w-full flex items-center justify-center"
-                      disabled={authLoading} // Use authLoading here
+                      disabled={authLoading}
                     >
                       {authLoading ? "Signing In..." : "Sign In"}
                       {!authLoading && <ArrowRight className="ml-2 h-4 w-4" />}
@@ -217,7 +210,6 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );
