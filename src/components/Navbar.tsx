@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +27,11 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
+
+  const handleLogout = async () => {
+    await logout();
+    closeMenu();
+  };
 
   return (
     <header
@@ -79,6 +84,15 @@ const Navbar = () => {
               </Link>
               <Button asChild size="lg" className="rounded-full px-6">
                 <Link to="/forum/private/my-circle">My Circle</Link>
+              </Button>
+              <Button 
+                onClick={handleLogout} 
+                variant="outline" 
+                size="lg" 
+                className="rounded-full px-6 flex items-center"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
               </Button>
             </>
           ) : (
@@ -134,6 +148,15 @@ const Navbar = () => {
                   <Link to="/forum/private/my-circle" onClick={closeMenu}>
                     My Circle
                   </Link>
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  size="lg"
+                  className="w-full justify-center rounded-full mt-2 flex items-center"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
                 </Button>
               </>
             ) : (

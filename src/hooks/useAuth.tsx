@@ -31,17 +31,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!supabaseUser) return null;
     
     try {
-      // For now, create a minimal user object with the data we have
+      // Get the profile data from the profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+      
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Error fetching profile:", profileError);
+      }
+      
+      // Create a user object with either the profile data or user metadata
       const apiUser: ApiUser = {
         id: supabaseUser.id,
-        name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+        name: profileData?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
         email: supabaseUser.email || '',
-        age: supabaseUser.user_metadata?.age || 0,
-        topic: supabaseUser.user_metadata?.topic || '',
-        goals: supabaseUser.user_metadata?.goals || [],
-        isSubscribed: false,
-        isBanned: false,
-        isAdmin: false,
+        age: profileData?.age || supabaseUser.user_metadata?.age || 0,
+        topic: profileData?.topic || supabaseUser.user_metadata?.topic || '',
+        goals: profileData?.goals || supabaseUser.user_metadata?.goals || [],
+        isSubscribed: profileData?.is_subscribed || false,
+        isBanned: profileData?.is_banned || false,
+        isAdmin: profileData?.is_admin || false,
       };
       
       return apiUser;
@@ -172,22 +183,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       console.log("Registering with data:", userData);
       
-      // Ensure goals is a proper array before registration
-      const userDataWithValidGoals = {
-        ...userData,
-        goals: Array.isArray(userData.goals) ? userData.goals : []
-      };
+      // Ensure goals is a proper array for registration
+      const formattedGoals = Array.isArray(userData.goals) 
+        ? userData.goals 
+        : (userData.goals ? [userData.goals] : []);
       
       // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
-        email: userDataWithValidGoals.email || '',
-        password: userDataWithValidGoals.password as string || '',
+        email: userData.email || '',
+        password: userData.password as string || '',
         options: {
           data: {
-            name: userDataWithValidGoals.name,
-            age: userDataWithValidGoals.age,
-            topic: userDataWithValidGoals.topic,
-            goals: userDataWithValidGoals.goals
+            name: userData.name,
+            age: userData.age,
+            topic: userData.topic,
+            goals: JSON.stringify(formattedGoals)
           }
         },
       });
@@ -224,19 +234,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (userId: string, data: Partial<ApiUser>) => {
     try {
-      // Ensure goals is a proper array before updating
-      const dataWithValidGoals = {
-        ...data,
-        goals: Array.isArray(data.goals) ? data.goals : []
-      };
+      // Format goals as array for update
+      const formattedGoals = Array.isArray(data.goals) 
+        ? data.goals 
+        : (data.goals ? [data.goals] : undefined);
       
       // Update user metadata in Supabase Auth
       const { error } = await supabase.auth.updateUser({
         data: {
-          name: dataWithValidGoals.name,
-          age: dataWithValidGoals.age,
-          topic: dataWithValidGoals.topic,
-          goals: dataWithValidGoals.goals,
+          name: data.name,
+          age: data.age,
+          topic: data.topic,
+          goals: formattedGoals ? JSON.stringify(formattedGoals) : undefined
         }
       });
       

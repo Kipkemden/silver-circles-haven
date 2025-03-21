@@ -24,6 +24,7 @@ import {
   PlusCircle,
   Search,
   XCircle,
+  LogOut
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -212,46 +213,66 @@ const privateForums = {
 };
 
 const ForumPage = () => {
-  const { forumType, id } = useParams();
-  const { isAuthenticated } = useAuth();
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
   const [currentForum, setCurrentForum] = useState<any>(null);
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [filteredPosts, setFilteredPosts] = useState<any[]>([]);
+  const [forumType, setForumType] = useState<'public' | 'private'>('public');
+  const [forumId, setForumId] = useState<string | undefined>(id);
 
-  // Ensure we have a default forum type and ID if none are provided
+  // Set default forum type and ID if none are provided
   useEffect(() => {
-    if (!forumType || !id) {
-      navigate("/forum/public/retirement-tips");
+    const path = window.location.pathname;
+    const pathParts = path.split('/');
+    
+    // Determine forum type from URL
+    if (pathParts.includes('private')) {
+      setForumType('private');
+      const privateId = pathParts[pathParts.indexOf('private') + 1];
+      setForumId(privateId || 'my-circle');
+    } else {
+      setForumType('public');
+      const publicId = pathParts[pathParts.indexOf('public') + 1];
+      setForumId(publicId || 'retirement-tips');
     }
-  }, [forumType, id, navigate]);
+  }, [window.location.pathname]);
 
+  // Load forum data based on type and ID
   useEffect(() => {
-    // Set current forum based on route params
-    if (forumType === "public" && id && publicForums[id as keyof typeof publicForums]) {
-      setCurrentForum(publicForums[id as keyof typeof publicForums]);
-      setFilteredPosts(publicForums[id as keyof typeof publicForums].posts);
-    } else if (forumType === "private" && id && privateForums[id as keyof typeof privateForums]) {
+    if (forumType === 'public') {
+      const validId = forumId || 'retirement-tips';
+      if (publicForums[validId as keyof typeof publicForums]) {
+        setCurrentForum(publicForums[validId as keyof typeof publicForums]);
+        setFilteredPosts(publicForums[validId as keyof typeof publicForums].posts);
+      } else {
+        // Default to retirement-tips if invalid ID
+        navigate('/forum/public/retirement-tips');
+      }
+    } else if (forumType === 'private') {
       if (!isAuthenticated) {
         // Redirect unauthenticated users trying to access private forums
-        navigate("/onboarding");
+        navigate('/onboarding');
         return;
       }
-      setCurrentForum(privateForums[id as keyof typeof privateForums]);
-      setFilteredPosts(privateForums[id as keyof typeof privateForums].posts);
-    } else if (forumType === "public") {
-      // If no valid public forum ID is provided, default to retirement-tips
-      navigate("/forum/public/retirement-tips");
-    } else {
-      // For any other invalid combination, set currentForum to null
-      setCurrentForum(null);
+      
+      const validId = forumId || 'my-circle';
+      if (privateForums[validId as keyof typeof privateForums]) {
+        setCurrentForum(privateForums[validId as keyof typeof privateForums]);
+        setFilteredPosts(privateForums[validId as keyof typeof privateForums].posts);
+      } else {
+        // Default to my-circle if invalid ID
+        navigate('/forum/private/my-circle');
+      }
     }
-  }, [forumType, id, isAuthenticated, navigate]);
+  }, [forumType, forumId, isAuthenticated, navigate]);
 
+  // Filter posts based on search query
   useEffect(() => {
-    if (currentForum) {
+    if (currentForum && currentForum.posts) {
       if (searchQuery.trim() === "") {
         setFilteredPosts(currentForum.posts);
       } else {
@@ -278,6 +299,11 @@ const ForumPage = () => {
     toast.success("Your post has been published!");
     setNewPost({ title: "", content: "" });
     setShowComposeForm(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
   };
 
   if (!currentForum) {
@@ -320,21 +346,34 @@ const ForumPage = () => {
                 <p className="text-silver-600">{currentForum.description}</p>
               </div>
 
-              {forumType === "public" && !isAuthenticated && (
-                <Button asChild className="mt-4 md:mt-0 rounded-full">
-                  <Link to="/onboarding">Subscribe to Post</Link>
-                </Button>
-              )}
+              <div className="flex items-center gap-2 mt-4 md:mt-0">
+                {forumType === "public" && !isAuthenticated && (
+                  <Button asChild className="rounded-full">
+                    <Link to="/onboarding">Subscribe to Post</Link>
+                  </Button>
+                )}
 
-              {(forumType === "private" || isAuthenticated) && (
-                <Button
-                  onClick={() => setShowComposeForm(true)}
-                  className="mt-4 md:mt-0 flex items-center rounded-full"
-                >
-                  <PlusCircle className="mr-2 h-5 w-5" />
-                  Create New Post
-                </Button>
-              )}
+                {(forumType === "private" || isAuthenticated) && (
+                  <Button
+                    onClick={() => setShowComposeForm(true)}
+                    className="flex items-center rounded-full"
+                  >
+                    <PlusCircle className="mr-2 h-5 w-5" />
+                    Create New Post
+                  </Button>
+                )}
+                
+                {isAuthenticated && (
+                  <Button 
+                    variant="outline"
+                    onClick={handleLogout} 
+                    className="flex items-center rounded-full"
+                  >
+                    <LogOut className="mr-2 h-5 w-5" />
+                    Logout
+                  </Button>
+                )}
+              </div>
             </div>
 
             {showComposeForm && (
@@ -383,7 +422,7 @@ const ForumPage = () => {
             )}
 
             {forumType === "public" && (
-              <Tabs defaultValue={id} className="mb-8">
+              <Tabs defaultValue={forumId || "retirement-tips"} className="mb-8">
                 <TabsList className="grid grid-cols-3 w-full md:w-auto">
                   <TabsTrigger
                     value="retirement-tips"
@@ -422,7 +461,7 @@ const ForumPage = () => {
               </div>
             </div>
 
-            {filteredPosts.length > 0 ? (
+            {filteredPosts && filteredPosts.length > 0 ? (
               <div>
                 {filteredPosts.map((post) => (
                   <ForumPost
