@@ -41,15 +41,22 @@ const ResetPasswordPage = () => {
       }
       
       // Verify hash is valid with Supabase
-      const { error } = await supabase.auth.getSession();
-      
-      if (error) {
+      try {
+        const { error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error validating reset token:", error);
+          toast.error("Invalid or expired password reset link");
+          navigate("/login");
+          return;
+        }
+        
+        setHasValidResetToken(true);
+      } catch (error) {
+        console.error("Error validating reset token:", error);
         toast.error("Invalid or expired password reset link");
         navigate("/login");
-        return;
       }
-      
-      setHasValidResetToken(true);
     };
     
     checkResetToken();
@@ -96,8 +103,8 @@ const ResetPasswordPage = () => {
       });
       
       if (error) {
-        toast.error("Failed to reset password. Please try again.");
         console.error("Reset password error:", error);
+        toast.error("Failed to reset password. Please try again.");
         return;
       }
       
@@ -106,8 +113,8 @@ const ResetPasswordPage = () => {
       // Redirect to profile page after successful password reset
       setTimeout(() => navigate("/profile"), 1500);
     } catch (error) {
-      toast.error("Failed to reset password. Please try again.");
       console.error("Reset password error:", error);
+      toast.error("Failed to reset password. Please try again.");
     } finally {
       setIsLoading(false);
     }

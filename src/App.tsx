@@ -40,14 +40,15 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
+            {/* Public routes - accessible without login */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/forum/:forumType/:id?" element={<ForumPage />} />
+            <Route path="/forum/public/:forumType/:id?" element={<ForumPage />} />
             <Route path="/support" element={<SupportPage />} />
             
-            {/* Protected routes */}
+            {/* Protected routes - require authentication */}
             <Route 
               path="/dashboard" 
               element={
@@ -61,6 +62,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/forum/private/:groupId" 
+              element={
+                <ProtectedRoute>
+                  <ForumPage />
                 </ProtectedRoute>
               } 
             />
