@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth(); // Renamed to authLoading for clarity
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -31,12 +29,12 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Redirect authenticated users away from login page
-  useState(() => {
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard");
     }
-  });
+  }, [isAuthenticated, navigate]); // Dependencies ensure this runs when isAuthenticated changes
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -71,8 +69,6 @@ const LoginPage = () => {
     if (!validateForm()) return;
     
     try {
-      setIsLoading(true);
-      
       const { success, error } = await login(formData.email, formData.password);
       
       if (!success) {
@@ -85,8 +81,6 @@ const LoginPage = () => {
     } catch (error: any) {
       toast.error("Login failed. Please try again.");
       console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -97,8 +91,6 @@ const LoginPage = () => {
     }
     
     try {
-      setIsLoading(true);
-      
       // Use the current origin for the redirect URL
       const redirectUrl = `${window.location.origin}/reset-password`;
       
@@ -117,8 +109,6 @@ const LoginPage = () => {
     } catch (error) {
       toast.error("Failed to send reset password email. Please try again.");
       console.error("Reset password error:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -189,16 +179,16 @@ const LoginPage = () => {
                       type="button" 
                       onClick={handleResetPassword} 
                       className="w-full flex items-center justify-center"
-                      disabled={isLoading}
+                      disabled={authLoading} // Use authLoading here
                     >
-                      {isLoading ? "Sending..." : "Send Reset Link"}
-                      {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+                      {authLoading ? "Sending..." : "Send Reset Link"}
+                      {!authLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                     </Button>
                     <Button 
                       variant="link" 
                       className="p-0 h-auto text-primary"
                       onClick={() => setResetPasswordMode(false)}
-                      disabled={isLoading}
+                      disabled={authLoading}
                     >
                       Back to Login
                     </Button>
@@ -209,10 +199,10 @@ const LoginPage = () => {
                       type="button" 
                       onClick={handleLogin} 
                       className="w-full flex items-center justify-center"
-                      disabled={isLoading}
+                      disabled={authLoading} // Use authLoading here
                     >
-                      {isLoading ? "Signing In..." : "Sign In"}
-                      {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+                      {authLoading ? "Signing In..." : "Sign In"}
+                      {!authLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                     </Button>
                     <p className="text-sm text-silver-500 text-center">
                       Don't have an account yet?{" "}
