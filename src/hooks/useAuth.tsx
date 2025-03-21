@@ -1,3 +1,4 @@
+
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -171,21 +172,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       console.log("Registering with data:", userData);
       
-      // Stringify the goals array before sending it to Supabase
-      // This fixes the array parsing issue in the database
-      const metadataWithStringifiedGoals = {
-        name: userData.name,
-        age: userData.age,
-        topic: userData.topic,
-        goals: userData.goals
+      // Ensure goals is a proper array before registration
+      const userDataWithValidGoals = {
+        ...userData,
+        goals: Array.isArray(userData.goals) ? userData.goals : []
       };
       
       // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
-        email: userData.email || '',
-        password: userData.password as string || '',
+        email: userDataWithValidGoals.email || '',
+        password: userDataWithValidGoals.password as string || '',
         options: {
-          data: metadataWithStringifiedGoals
+          data: {
+            name: userDataWithValidGoals.name,
+            age: userDataWithValidGoals.age,
+            topic: userDataWithValidGoals.topic,
+            goals: userDataWithValidGoals.goals
+          }
         },
       });
       
@@ -221,13 +224,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (userId: string, data: Partial<ApiUser>) => {
     try {
+      // Ensure goals is a proper array before updating
+      const dataWithValidGoals = {
+        ...data,
+        goals: Array.isArray(data.goals) ? data.goals : []
+      };
+      
       // Update user metadata in Supabase Auth
       const { error } = await supabase.auth.updateUser({
         data: {
-          name: data.name,
-          age: data.age,
-          topic: data.topic,
-          goals: data.goals,
+          name: dataWithValidGoals.name,
+          age: dataWithValidGoals.age,
+          topic: dataWithValidGoals.topic,
+          goals: dataWithValidGoals.goals,
         }
       });
       

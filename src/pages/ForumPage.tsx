@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -213,11 +214,19 @@ const privateForums = {
 const ForumPage = () => {
   const { forumType, id } = useParams();
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [currentForum, setCurrentForum] = useState<any>(null);
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [filteredPosts, setFilteredPosts] = useState<any[]>([]);
+
+  // Ensure we have a default forum type and ID if none are provided
+  useEffect(() => {
+    if (!forumType || !id) {
+      navigate("/forum/public/retirement-tips");
+    }
+  }, [forumType, id, navigate]);
 
   useEffect(() => {
     // Set current forum based on route params
@@ -227,16 +236,19 @@ const ForumPage = () => {
     } else if (forumType === "private" && id && privateForums[id as keyof typeof privateForums]) {
       if (!isAuthenticated) {
         // Redirect unauthenticated users trying to access private forums
-        window.location.href = "/onboarding";
+        navigate("/onboarding");
         return;
       }
       setCurrentForum(privateForums[id as keyof typeof privateForums]);
       setFilteredPosts(privateForums[id as keyof typeof privateForums].posts);
+    } else if (forumType === "public") {
+      // If no valid public forum ID is provided, default to retirement-tips
+      navigate("/forum/public/retirement-tips");
     } else {
-      // Handle invalid forum
+      // For any other invalid combination, set currentForum to null
       setCurrentForum(null);
     }
-  }, [forumType, id, isAuthenticated]);
+  }, [forumType, id, isAuthenticated, navigate]);
 
   useEffect(() => {
     if (currentForum) {
@@ -446,7 +458,7 @@ const ForumPage = () => {
       </main>
 
       {forumType === "public" && !isAuthenticated && (
-        <SubscriptionCTA delay={15} />
+        <SubscriptionCTA />
       )}
 
       <Footer />

@@ -45,7 +45,7 @@ const App = () => (
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/forum/public/:forumType/:id?" element={<ForumPage />} />
+            <Route path="/forum/public/:id?" element={<ForumPage />} />
             <Route path="/support" element={<SupportPage />} />
             
             {/* Protected routes - require authentication */}
@@ -66,7 +66,7 @@ const App = () => (
               } 
             />
             <Route 
-              path="/forum/private/:groupId" 
+              path="/forum/private/:id" 
               element={
                 <ProtectedRoute>
                   <ForumPage />
