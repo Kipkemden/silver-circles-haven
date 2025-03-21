@@ -86,7 +86,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar isAuthenticated={true} />
+      <Navbar />
 
       <main className="flex-grow pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4 md:px-6">

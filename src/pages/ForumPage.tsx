@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ForumPost from "@/components/ForumPost";
@@ -212,7 +212,7 @@ const privateForums = {
 
 const ForumPage = () => {
   const { forumType, id } = useParams();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated } = useAuth();
   const [currentForum, setCurrentForum] = useState<any>(null);
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -220,16 +220,12 @@ const ForumPage = () => {
   const [filteredPosts, setFilteredPosts] = useState<any[]>([]);
 
   useEffect(() => {
-    // Check authentication status
-    const authStatus = localStorage.getItem("isAuthenticated") === "true";
-    setIsAuthenticated(authStatus);
-
     // Set current forum based on route params
     if (forumType === "public" && id && publicForums[id as keyof typeof publicForums]) {
       setCurrentForum(publicForums[id as keyof typeof publicForums]);
       setFilteredPosts(publicForums[id as keyof typeof publicForums].posts);
     } else if (forumType === "private" && id && privateForums[id as keyof typeof privateForums]) {
-      if (!authStatus) {
+      if (!isAuthenticated) {
         // Redirect unauthenticated users trying to access private forums
         window.location.href = "/onboarding";
         return;
@@ -240,7 +236,7 @@ const ForumPage = () => {
       // Handle invalid forum
       setCurrentForum(null);
     }
-  }, [forumType, id]);
+  }, [forumType, id, isAuthenticated]);
 
   useEffect(() => {
     if (currentForum) {
@@ -275,7 +271,7 @@ const ForumPage = () => {
   if (!currentForum) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar isAuthenticated={isAuthenticated} />
+        <Navbar />
         <div className="flex-grow pt-32 pb-20 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-3xl font-serif mb-4">Forum Not Found</h1>
@@ -294,7 +290,7 @@ const ForumPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar isAuthenticated={isAuthenticated} />
+      <Navbar />
 
       <main className="flex-grow pt-32 pb-20">
         <div className="container mx-auto px-4 md:px-6">

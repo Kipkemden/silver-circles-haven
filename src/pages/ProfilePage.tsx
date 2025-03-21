@@ -1,106 +1,91 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { toast } from "sonner";
-import { AlertCircle, Save, CreditCard, LogOut } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+interface ProfileFormData {
+  name: string;
+  email: string;
+  age: string;
+  topic: string;
+  goals: string[];
+}
+
 const ProfilePage = () => {
-  const navigate = useNavigate();
-  const [userData, setUserData] = useState<any>(null);
-  const [formData, setFormData] = useState({
+  const { user, updateProfile, logout } = useAuth();
+  const [formData, setFormData] = useState<ProfileFormData>({
     name: "",
     email: "",
-    password: "",
-    confirmPassword: "",
+    age: "",
+    topic: "",
+    goals: [] as string[],
   });
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    // In a real app, this would fetch user data from Supabase
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      const parsedData = JSON.parse(storedUserData);
-      setUserData(parsedData);
+    if (user) {
       setFormData({
-        name: parsedData.name || "",
-        email: parsedData.email || "",
-        password: "",
-        confirmPassword: "",
+        name: user.name || "",
+        email: user.email || "",
+        age: user.age?.toString() || "",
+        topic: user.topic || "",
+        goals: user.goals || [],
       });
     }
-  }, []);
+  }, [user]);
 
-  const handleSaveProfile = () => {
-    // Validate password match if updating password
-    if (
-      formData.password &&
-      formData.password !== formData.confirmPassword
-    ) {
-      toast.error("Passwords do not match");
-      return;
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    // In a real app, this would update user data in Supabase
-    const updatedUserData = {
-      ...userData,
+  const handleGoalsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData(prev => {
+      let newGoals = [...prev.goals];
+      if (checked) {
+        newGoals.push(value);
+      } else {
+        newGoals = newGoals.filter(goal => goal !== value);
+      }
+      return { ...prev, goals: newGoals };
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const result = await updateProfile(user.id, {
       name: formData.name,
-      email: formData.email,
-    };
-    
-    localStorage.setItem("userData", JSON.stringify(updatedUserData));
-    setUserData(updatedUserData);
-    
-    toast.success("Profile updated successfully");
+      age: parseInt(formData.age),
+      topic: formData.topic,
+      goals: formData.goals,
+    });
+
+    if (result.success) {
+      setIsEditing(false);
+    }
   };
 
-  const handleCancelSubscription = () => {
-    // In a real app, this would call Stripe API to cancel subscription
-    localStorage.removeItem("isAuthenticated");
-    toast.success("Your subscription has been canceled");
-    navigate("/");
+  const handleLogout = async () => {
+    await logout();
   };
 
-  const handleLogout = () => {
-    // In a real app, this would sign out from Supabase
-    localStorage.removeItem("isAuthenticated");
-    navigate("/");
-  };
-
-  if (!userData) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-36 bg-silver-200 rounded mb-4"></div>
-          <div className="h-6 w-72 bg-silver-200 rounded"></div>
+        <div className="text-center">
+          <h2 className="text-2xl font-serif mb-2">Loading...</h2>
+          <p className="text-silver-600">Please wait while we retrieve your profile.</p>
         </div>
       </div>
     );
@@ -108,206 +93,149 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar isAuthenticated={true} />
+      <Navbar />
 
-      <main className="flex-grow pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white">
+      <main className="flex-grow pt-32 pb-20">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-serif font-medium mb-8">
-              Your Profile
-            </h1>
-
-            <div className="grid gap-8">
-              <Card className="border border-silver-200">
-                <CardHeader>
-                  <CardTitle className="text-xl">Account Information</CardTitle>
-                  <CardDescription>
-                    Update your personal details
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                    />
+          <div className="max-w-4xl mx-auto">
+            <Card className="border border-silver-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-2xl font-bold">Your Profile</CardTitle>
+                {isEditing ? (
+                  <div className="space-x-2">
+                    <Button variant="ghost" onClick={() => setIsEditing(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSubmit}>Save</Button>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={handleSaveProfile} className="flex items-center">
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="border border-silver-200">
-                <CardHeader>
-                  <CardTitle className="text-xl">Security</CardTitle>
-                  <CardDescription>Update your password</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="password">New Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={handleSaveProfile}>Update Password</Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="border border-silver-200">
-                <CardHeader>
-                  <CardTitle className="text-xl">Subscription</CardTitle>
-                  <CardDescription>
-                    Manage your subscription settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-silver-50 p-4 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">Current Plan</h4>
-                      <span className="bg-blue-100 text-primary px-2 py-1 rounded-full text-xs font-medium">
-                        ACTIVE
-                      </span>
+                ) : (
+                  <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Tabs defaultValue="account" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="account">Account</TabsTrigger>
+                    <TabsTrigger value="preferences">Preferences</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="account" className="space-y-4">
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                          Name
+                        </label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          disabled={!isEditing}
+                          placeholder="Your Name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                          Email
+                        </label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          disabled
+                          placeholder="Your Email"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="age" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                          Age
+                        </label>
+                        <Input
+                          id="age"
+                          name="age"
+                          type="number"
+                          value={formData.age}
+                          onChange={handleChange}
+                          disabled={!isEditing}
+                          placeholder="Your Age"
+                        />
+                      </div>
                     </div>
-                    <p className="text-silver-600 mb-4">
-                      {userData.plan === "yearly" ? "Annual Plan - $600/year" : "Monthly Plan - $60/month"}
-                    </p>
-                    <div className="flex items-center text-sm text-silver-500">
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      <span>Next billing date: January 15, 2024</span>
+                  </TabsContent>
+                  <TabsContent value="preferences">
+                    <div className="space-y-2">
+                      <label htmlFor="topic" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                        Preferred Topic
+                      </label>
+                      <Input
+                        id="topic"
+                        name="topic"
+                        value={formData.topic}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="e.g., Retirement, Dating"
+                      />
                     </div>
-                  </div>
-                  
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="payment">
-                      <AccordionTrigger>Payment Method</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex items-center justify-between py-2">
-                          <div className="flex items-center">
-                            <div className="h-8 w-12 bg-silver-200 rounded mr-3"></div>
-                            <span>•••• •••• •••• 4242</span>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Update
-                          </Button>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                        Your Goals
+                      </label>
+                      <div className="flex flex-col space-y-2">
+                        <div>
+                          <label className="inline-flex items-center space-x-2">
+                            <Input
+                              type="checkbox"
+                              value="Financial Security"
+                              checked={formData.goals.includes("Financial Security")}
+                              onChange={handleGoalsChange}
+                              disabled={!isEditing}
+                              className="h-4 w-4 rounded"
+                            />
+                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                              Financial Security
+                            </span>
+                          </label>
                         </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                    
-                    <AccordionItem value="history">
-                      <AccordionTrigger>Billing History</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between py-2 border-b border-silver-100">
-                            <div>
-                              <p className="font-medium">Dec 15, 2023</p>
-                              <p className="text-sm text-silver-500">
-                                Silver Circles Membership
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-medium">
-                                {userData.plan === "yearly" ? "$600.00" : "$60.00"}
-                              </p>
-                              <p className="text-sm text-green-600">Paid</p>
-                            </div>
-                          </div>
+                        <div>
+                          <label className="inline-flex items-center space-x-2">
+                            <Input
+                              type="checkbox"
+                              value="Social Connections"
+                              checked={formData.goals.includes("Social Connections")}
+                              onChange={handleGoalsChange}
+                              disabled={!isEditing}
+                              className="h-4 w-4 rounded"
+                            />
+                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                              Social Connections
+                            </span>
+                          </label>
                         </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline">Download Invoices</Button>
-                  <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive">Cancel Subscription</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center">
-                          <AlertCircle className="mr-2 h-5 w-5 text-destructive" />
-                          Cancel Your Subscription?
-                        </DialogTitle>
-                        <DialogDescription className="pt-4">
-                          Are you sure you want to cancel your Silver Circles membership? You'll lose access to:
-                          <ul className="list-disc pl-5 pt-2 space-y-1">
-                            <li>Weekly group sessions</li>
-                            <li>Private forum access</li>
-                            <li>Community support</li>
-                          </ul>
-                          <p className="pt-2">
-                            Your access will continue until the end of your current billing period.
-                          </p>
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter className="mt-4">
-                        <DialogClose asChild>
-                          <Button variant="outline">Keep Subscription</Button>
-                        </DialogClose>
-                        <Button
-                          variant="destructive"
-                          onClick={handleCancelSubscription}
-                        >
-                          Confirm Cancellation
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardFooter>
-              </Card>
-
-              <div className="text-center pt-4">
-                <Button
-                  variant="ghost"
-                  className="text-silver-600 hover:text-silver-900"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" /> Log Out
-                </Button>
-              </div>
-            </div>
+                        <div>
+                          <label className="inline-flex items-center space-x-2">
+                            <Input
+                              type="checkbox"
+                              value="Personal Growth"
+                              checked={formData.goals.includes("Personal Growth")}
+                              onChange={handleGoalsChange}
+                              disabled={!isEditing}
+                              className="h-4 w-4 rounded"
+                            />
+                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                              Personal Growth
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+              <Button variant="destructive" onClick={handleLogout}>
+                Logout
+              </Button>
+            </Card>
           </div>
         </div>
       </main>
