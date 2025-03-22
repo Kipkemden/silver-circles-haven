@@ -1,4 +1,3 @@
-
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -65,51 +64,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Check if user is already authenticated on mount
     const checkAuthStatus = async () => {
-      setIsLoading(true);
-      
       try {
         // Set up auth state listener FIRST
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            console.log("Auth state changed:", event, session);
-            setSession(session);
+          async (event, newSession) => {
+            console.log("Auth state changed:", event, newSession);
             
-            if (session) {
-              const apiUser = await transformSupabaseUser(session.user);
-              setUser(apiUser);
-              setIsAuthenticated(true);
-              setIsBanned(apiUser?.isBanned || false);
+            if (newSession) {
+              setSession(newSession);
+              const apiUser = await transformSupabaseUser(newSession.user);
+              if (apiUser) {
+                setUser(apiUser);
+                setIsAuthenticated(true);
+                setIsBanned(apiUser.isBanned || false);
+              }
             } else {
+              setSession(null);
               setUser(null);
               setIsAuthenticated(false);
               setIsBanned(false);
             }
+            
+            // Set loading to false after handling auth state change
+            setIsLoading(false);
           }
         );
 
         // THEN check for existing session
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
         
-        if (session) {
-          setSession(session);
-          const apiUser = await transformSupabaseUser(session.user);
-          setUser(apiUser);
-          setIsAuthenticated(true);
-          setIsBanned(apiUser?.isBanned || false);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-          setIsBanned(false);
+        if (existingSession) {
+          setSession(existingSession);
+          const apiUser = await transformSupabaseUser(existingSession.user);
+          if (apiUser) {
+            setUser(apiUser);
+            setIsAuthenticated(true);
+            setIsBanned(apiUser.isBanned || false);
+          }
         }
-
-        return () => subscription.unsubscribe();
+        
+        // Set loading to false after initial check
+        setIsLoading(false);
+        
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error("Auth status check failed:", error);
         // Reset auth state if check fails
         setIsAuthenticated(false);
         setIsBanned(false);
         setUser(null);
-      } finally {
         setIsLoading(false);
       }
     };
@@ -119,7 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -127,54 +131,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         console.error("Login error:", error);
-        toast.error(error.message);
         return { success: false, error: error.message };
       }
       
-      if (data.user) {
-        const apiUser = await transformSupabaseUser(data.user);
-        
-        if (apiUser) {
-          setIsAuthenticated(true);
-          setIsBanned(apiUser.isBanned || false);
-          setUser(apiUser);
-          
-          toast.success("Login successful!");
-          return { success: true };
-        }
-      }
-      
-      return { success: false, error: "Login failed" };
+      // The session and user state will be updated by the onAuthStateChange listener
+      return { success: true };
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
       return { success: false, error: error.message || "Login failed" };
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Logout error:", error);
-        throw error;
+        toast.error("Logout failed. Please try again.");
+        return;
       }
       
-      setIsAuthenticated(false);
-      setIsBanned(false);
-      setUser(null);
-      setSession(null);
-      
+      // The session and user state will be updated by the onAuthStateChange listener
       toast.success("Logged out successfully");
     } catch (error: any) {
       console.error("Logout error:", error);
       toast.error("Logout failed. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
