@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +15,6 @@ import { Calendar, MessageSquare, Video, Clock, Users, ArrowRight } from "lucide
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ForumPost from "@/components/ForumPost";
-import { useAuth } from "@/hooks/useAuth";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data
 const upcomingMeeting = {
@@ -65,45 +63,22 @@ const privatePosts = [
 ];
 
 const DashboardPage = () => {
-  const { user, isLoading } = useAuth();
-  console.log("Dashboard - auth state:", { user, isLoading });
+  const [userData, setUserData] = useState<any>(null);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-5xl mx-auto">
-              <Skeleton className="h-10 w-64 mb-2" />
-              <Skeleton className="h-4 w-72 mb-10" />
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <Skeleton className="h-64 md:col-span-2" />
-                <Skeleton className="h-64" />
-              </div>
-              
-              <Skeleton className="h-8 w-48 mb-6" />
-              <Skeleton className="h-36 mb-4" />
-              <Skeleton className="h-36 mb-4" />
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  useEffect(() => {
+    // In a real app, this would fetch user data from Supabase
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+  }, []);
 
-  if (!user) {
-    console.error("User not authenticated but reached dashboard");
+  if (!userData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-serif mb-2">Authentication Error</h2>
-          <p className="text-silver-600 mb-4">Unable to load your dashboard. Please try logging in again.</p>
-          <Button asChild>
-            <Link to="/login">Return to Login</Link>
-          </Button>
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-12 w-36 bg-silver-200 rounded mb-4"></div>
+          <div className="h-6 w-72 bg-silver-200 rounded"></div>
         </div>
       </div>
     );
@@ -117,10 +92,10 @@ const DashboardPage = () => {
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-serif font-medium mb-2">
-              Welcome, {user.name.split(" ")[0]}
+              Welcome, {userData.name.split(" ")[0]}
             </h1>
             <p className="text-silver-600 mb-10">
-              Your {user.topic === "retirement" ? "Reinventing Retirement" : "Silver Singles"} circle is here to support you.
+              Your {userData.topic === "retirement" ? "Reinventing Retirement" : "Silver Singles"} circle is here to support you.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">

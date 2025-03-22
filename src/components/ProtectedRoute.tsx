@@ -16,8 +16,6 @@ const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { isAuthenticated, isBanned, isLoading, user } = useAuth();
   const location = useLocation();
-  
-  console.log("ProtectedRoute - auth state:", { isAuthenticated, isLoading, user });
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -33,25 +31,21 @@ const ProtectedRoute = ({
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    console.log("ProtectedRoute - Not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
   
   // Redirect banned users to support page
   if (isBanned) {
-    console.log("ProtectedRoute - User is banned, redirecting to support");
     return <Navigate to="/support" replace />;
   }
 
   // Check subscription status if required
   if (requireSubscription && user && !user.isSubscribed) {
-    console.log("ProtectedRoute - Subscription required, redirecting");
     return <Navigate to="/subscription" replace />;
   }
 
   // Check admin status if required
   if (adminOnly && user && !user.isAdmin) {
-    console.log("ProtectedRoute - Admin access required, redirecting");
     return <Navigate to="/dashboard" replace />;
   }
 
