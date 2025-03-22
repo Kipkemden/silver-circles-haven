@@ -121,6 +121,25 @@ const LoginPage = () => {
     }
   };
 
+  // Reset the isSubmitting state if there's an error to ensure button is clickable
+  useEffect(() => {
+    if (Object.keys(errors).length > 0 && isSubmitting) {
+      setIsSubmitting(false);
+    }
+  }, [errors, isSubmitting]);
+
+  // Handle pressing enter in form fields
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (resetPasswordMode) {
+        handleResetPassword();
+      } else {
+        handleLogin();
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -147,6 +166,7 @@ const LoginPage = () => {
                     placeholder="e.g. jane@example.com"
                     value={formData.email}
                     onChange={(e) => updateFormData("email", e.target.value)}
+                    onKeyPress={handleKeyPress}
                     className={cn(errors.email && "border-destructive")}
                     disabled={isSubmitting}
                   />
@@ -163,6 +183,7 @@ const LoginPage = () => {
                         className="p-0 h-auto text-xs text-primary"
                         onClick={() => setResetPasswordMode(true)}
                         disabled={isSubmitting}
+                        type="button"
                       >
                         Forgot password?
                       </Button>
@@ -173,6 +194,7 @@ const LoginPage = () => {
                       placeholder="Enter your password"
                       value={formData.password}
                       onChange={(e) => updateFormData("password", e.target.value)}
+                      onKeyPress={handleKeyPress}
                       className={cn(errors.password && "border-destructive")}
                       disabled={isSubmitting}
                     />
@@ -189,7 +211,7 @@ const LoginPage = () => {
                       type="button"
                       onClick={handleResetPassword}
                       className="w-full flex items-center justify-center"
-                      disabled={isSubmitting || authLoading}
+                      disabled={isSubmitting}
                     >
                       {isSubmitting ? "Sending..." : "Send Reset Link"}
                       {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
@@ -199,6 +221,7 @@ const LoginPage = () => {
                       className="p-0 h-auto text-primary"
                       onClick={() => setResetPasswordMode(false)}
                       disabled={isSubmitting}
+                      type="button"
                     >
                       Back to Login
                     </Button>
@@ -209,7 +232,7 @@ const LoginPage = () => {
                       type="button"
                       onClick={handleLogin}
                       className="w-full flex items-center justify-center"
-                      disabled={isSubmitting || authLoading}
+                      disabled={isSubmitting && authLoading}
                     >
                       {isSubmitting ? "Signing In..." : "Sign In"}
                       {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
