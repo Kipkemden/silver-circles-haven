@@ -184,9 +184,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Registering with data:", userData);
       
       // Ensure goals is a proper array for registration
-      const formattedGoals = Array.isArray(userData.goals) 
+      const goalsArray = Array.isArray(userData.goals) 
         ? userData.goals 
         : (userData.goals ? [userData.goals] : []);
+      
+      // Convert array to JSON string for metadata
+      const goalsString = JSON.stringify(goalsArray);
+      console.log("Formatted goals for registration:", goalsString);
       
       // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
@@ -197,7 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: userData.name,
             age: userData.age,
             topic: userData.topic,
-            goals: JSON.stringify(formattedGoals)
+            goals: goalsString
           }
         },
       });
