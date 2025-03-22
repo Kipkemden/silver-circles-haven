@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: supabaseUser.email || '',
         age: profileData?.age || supabaseUser.user_metadata?.age || 0,
         topic: profileData?.topic || supabaseUser.user_metadata?.topic || '',
-        goals: profileData?.goals || supabaseUser.user_metadata?.goals || [],
+        goals: profileData?.goals || [],
         isSubscribed: profileData?.is_subscribed || false,
         isBanned: profileData?.is_banned || false,
         isAdmin: profileData?.is_admin || false,
@@ -183,14 +183,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       console.log("Registering with data:", userData);
       
-      // Ensure goals is a proper array for registration
-      const goalsArray = Array.isArray(userData.goals) 
-        ? userData.goals 
-        : (userData.goals ? [userData.goals] : []);
+      // Process goals array - ensure it's an array of strings
+      let goalsArray: string[] = [];
       
-      // Convert array to JSON string for metadata
-      const goalsString = JSON.stringify(goalsArray);
-      console.log("Formatted goals for registration:", goalsString);
+      if (userData.goals) {
+        if (Array.isArray(userData.goals)) {
+          goalsArray = userData.goals;
+        } else if (typeof userData.goals === 'string') {
+          goalsArray = [userData.goals];
+        }
+      }
+      
+      console.log("Prepared goals for registration:", goalsArray);
       
       // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
@@ -201,7 +205,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: userData.name,
             age: userData.age,
             topic: userData.topic,
-            goals: goalsString
+            goals: goalsArray
           }
         },
       });
@@ -249,7 +253,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           name: data.name,
           age: data.age,
           topic: data.topic,
-          goals: formattedGoals ? JSON.stringify(formattedGoals) : undefined
+          goals: formattedGoals
         }
       });
       
