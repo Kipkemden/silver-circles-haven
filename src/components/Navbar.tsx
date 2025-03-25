@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,7 +62,14 @@ const Navbar = () => {
             Community
           </Link>
           
-          {isAuthenticated ? (
+          {isLoading ? (
+            // Loading state
+            <div className="animate-pulse flex space-x-4">
+              <div className="rounded-full bg-silver-200 h-10 w-20"></div>
+              <div className="rounded-full bg-silver-200 h-10 w-20"></div>
+            </div>
+          ) : isAuthenticated ? (
+            // Authenticated user menu
             <>
               <Link
                 to="/dashboard"
@@ -96,9 +103,15 @@ const Navbar = () => {
               </Button>
             </>
           ) : (
-            <Button asChild size="lg" className="rounded-full px-6">
-              <Link to="/onboarding">Sign Up Now</Link>
-            </Button>
+            // Guest menu
+            <>
+              <Button asChild variant="ghost" size="lg">
+                <Link to="/login">Log In</Link>
+              </Button>
+              <Button asChild size="lg" className="rounded-full px-6">
+                <Link to="/onboarding">Sign Up Now</Link>
+              </Button>
+            </>
           )}
         </nav>
 
@@ -124,7 +137,14 @@ const Navbar = () => {
               Community
             </Link>
             
-            {isAuthenticated ? (
+            {isLoading ? (
+              // Loading state
+              <div className="animate-pulse space-y-4">
+                <div className="rounded bg-silver-200 h-10 w-full"></div>
+                <div className="rounded bg-silver-200 h-10 w-full"></div>
+              </div>
+            ) : isAuthenticated ? (
+              // Authenticated user menu
               <>
                 <Link
                   to="/dashboard"
@@ -160,15 +180,25 @@ const Navbar = () => {
                 </Button>
               </>
             ) : (
-              <Button
-                asChild
-                size="lg"
-                className="w-full justify-center rounded-full mt-2"
-              >
-                <Link to="/onboarding" onClick={closeMenu}>
-                  Sign Up Now
+              // Guest menu
+              <>
+                <Link
+                  to="/login"
+                  className="text-silver-700 hover:text-primary py-2 text-lg"
+                  onClick={closeMenu}
+                >
+                  Log In
                 </Link>
-              </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full justify-center rounded-full mt-2"
+                >
+                  <Link to="/onboarding" onClick={closeMenu}>
+                    Sign Up Now
+                  </Link>
+                </Button>
+              </>
             )}
           </nav>
         </div>

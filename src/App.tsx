@@ -19,6 +19,7 @@ import AdminPage from "./pages/AdminPage";
 import SupportPage from "./pages/SupportPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +42,8 @@ const App = () => (
           <ScrollToTop />
           <Routes>
             {/* Public routes - accessible without login */}
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
