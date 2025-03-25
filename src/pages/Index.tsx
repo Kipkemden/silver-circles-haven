@@ -27,13 +27,13 @@ const Index = () => {
           ) : isAuthenticated ? (
             <div className="space-y-4">
               <Button asChild size="lg" className="rounded-full px-8">
-                <Link to="/dashboard">
-                  Go to Dashboard
+                <Link to="/forum/private/my-circle">
+                  Go to My Circle
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <p className="text-silver-500 mt-2">
-                Access your personal dashboard to connect with your circle
+                Connect with your community and access private discussions
               </p>
             </div>
           ) : (

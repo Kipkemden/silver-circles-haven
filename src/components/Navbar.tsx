@@ -33,6 +33,29 @@ const Navbar = () => {
     closeMenu();
   };
 
+  // Public navigation items - accessible to all users
+  const publicNavItems = [
+    {
+      label: "Community",
+      path: "/forum/public/retirement-tips",
+      isActive: location.pathname.includes("/forum/public")
+    }
+  ];
+
+  // Private navigation items - only for authenticated users
+  const privateNavItems = [
+    {
+      label: "My Circle",
+      path: "/forum/private/my-circle",
+      isActive: location.pathname.includes("/forum/private")
+    },
+    {
+      label: "Profile",
+      path: "/profile",
+      isActive: location.pathname === "/profile"
+    }
+  ];
+
   return (
     <header
       className={cn(
@@ -52,15 +75,19 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Link
-            to="/forum/public/retirement-tips"
-            className={cn(
-              "text-silver-700 hover:text-primary transition-colors font-medium",
-              location.pathname.includes("/forum/public") && "text-primary"
-            )}
-          >
-            Community
-          </Link>
+          {/* Public navigation - always visible */}
+          {publicNavItems.map(item => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "text-silver-700 hover:text-primary transition-colors font-medium",
+                item.isActive && "text-primary"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
           
           {isLoading ? (
             // Loading state
@@ -71,27 +98,18 @@ const Navbar = () => {
           ) : isAuthenticated ? (
             // Authenticated user menu
             <>
-              <Link
-                to="/dashboard"
-                className={cn(
-                  "text-silver-700 hover:text-primary transition-colors font-medium",
-                  location.pathname === "/dashboard" && "text-primary"
-                )}
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/profile"
-                className={cn(
-                  "text-silver-700 hover:text-primary transition-colors font-medium",
-                  location.pathname === "/profile" && "text-primary"
-                )}
-              >
-                Profile
-              </Link>
-              <Button asChild size="lg" className="rounded-full px-6">
-                <Link to="/forum/private/my-circle">My Circle</Link>
-              </Button>
+              {privateNavItems.map(item => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "text-silver-700 hover:text-primary transition-colors font-medium",
+                    item.isActive && "text-primary"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
@@ -129,13 +147,17 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg animate-fade-in">
           <nav className="container mx-auto px-4 py-6 flex flex-col space-y-4">
-            <Link
-              to="/forum/public/retirement-tips"
-              className="text-silver-700 hover:text-primary py-2 text-lg"
-              onClick={closeMenu}
-            >
-              Community
-            </Link>
+            {/* Public navigation - always visible */}
+            {publicNavItems.map(item => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="text-silver-700 hover:text-primary py-2 text-lg"
+                onClick={closeMenu}
+              >
+                {item.label}
+              </Link>
+            ))}
             
             {isLoading ? (
               // Loading state
@@ -146,29 +168,16 @@ const Navbar = () => {
             ) : isAuthenticated ? (
               // Authenticated user menu
               <>
-                <Link
-                  to="/dashboard"
-                  className="text-silver-700 hover:text-primary py-2 text-lg"
-                  onClick={closeMenu}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/profile"
-                  className="text-silver-700 hover:text-primary py-2 text-lg"
-                  onClick={closeMenu}
-                >
-                  Profile
-                </Link>
-                <Button
-                  asChild
-                  size="lg"
-                  className="w-full justify-center rounded-full mt-2"
-                >
-                  <Link to="/forum/private/my-circle" onClick={closeMenu}>
-                    My Circle
+                {privateNavItems.map(item => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="text-silver-700 hover:text-primary py-2 text-lg"
+                    onClick={closeMenu}
+                  >
+                    {item.label}
                   </Link>
-                </Button>
+                ))}
                 <Button
                   onClick={handleLogout}
                   variant="outline"
