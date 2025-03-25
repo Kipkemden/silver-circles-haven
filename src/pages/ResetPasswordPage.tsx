@@ -18,9 +18,11 @@ import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     password: "",
@@ -30,6 +32,12 @@ const ResetPasswordPage = () => {
   const [hasValidResetToken, setHasValidResetToken] = useState(false);
 
   useEffect(() => {
+    // If already authenticated, redirect to dashboard
+    if (isAuthenticated) {
+      navigate("/dashboard");
+      return;
+    }
+
     // Check if we have a valid hash in the URL
     const checkResetToken = async () => {
       const hash = window.location.hash;
@@ -60,7 +68,7 @@ const ResetPasswordPage = () => {
     };
     
     checkResetToken();
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -92,8 +100,9 @@ const ResetPasswordPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleResetPassword = async () => {
-    if (!validateForm()) return;
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm() || isLoading) return;
     
     try {
       setIsLoading(true);
@@ -110,8 +119,8 @@ const ResetPasswordPage = () => {
       
       toast.success("Your password has been successfully reset!");
       
-      // Redirect to profile page after successful password reset
-      setTimeout(() => navigate("/profile"), 1500);
+      // Redirect to login page after successful password reset
+      setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
       console.error("Reset password error:", error);
       toast.error("Failed to reset password. Please try again.");
@@ -138,7 +147,6 @@ const ResetPasswordPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
       <div className="flex-grow py-32 bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-md mx-auto">
@@ -149,53 +157,55 @@ const ResetPasswordPage = () => {
                   Please enter a new password for your account
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="password">New Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your new password"
-                    value={formData.password}
-                    onChange={(e) => updateFormData("password", e.target.value)}
-                    className={cn(errors.password && "border-destructive")}
-                  />
-                  {errors.password && (
-                    <p className="text-destructive text-sm">{errors.password}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your new password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => updateFormData("confirmPassword", e.target.value)}
-                    className={cn(errors.confirmPassword && "border-destructive")}
-                  />
-                  {errors.confirmPassword && (
-                    <p className="text-destructive text-sm">{errors.confirmPassword}</p>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  type="button" 
-                  onClick={handleResetPassword} 
-                  className="w-full flex items-center justify-center"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Updating..." : "Reset Password"}
-                  {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
-                </Button>
-              </CardFooter>
+              <form onSubmit={handleResetPassword}>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">New Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your new password"
+                      value={formData.password}
+                      onChange={(e) => updateFormData("password", e.target.value)}
+                      className={cn(errors.password && "border-destructive")}
+                      disabled={isLoading}
+                    />
+                    {errors.password && (
+                      <p className="text-destructive text-sm">{errors.password}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your new password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                      className={cn(errors.confirmPassword && "border-destructive")}
+                      disabled={isLoading}
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-destructive text-sm">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    type="submit"
+                    className="w-full flex items-center justify-center"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Updating..." : "Reset Password"}
+                    {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+                  </Button>
+                </CardFooter>
+              </form>
             </Card>
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );

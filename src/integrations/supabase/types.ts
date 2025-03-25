@@ -42,13 +42,6 @@ export type Database = {
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       groups: {
@@ -109,13 +102,6 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -203,18 +189,11 @@ export type Database = {
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "posts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       profiles: {
         Row: {
-          age: number
+          age: number | null
           created_at: string | null
           email: string
           goals: string[] | null
@@ -224,10 +203,10 @@ export type Database = {
           is_banned: boolean | null
           is_subscribed: boolean | null
           name: string
-          topic: string
+          topic: string | null
         }
         Insert: {
-          age: number
+          age?: number | null
           created_at?: string | null
           email: string
           goals?: string[] | null
@@ -237,10 +216,10 @@ export type Database = {
           is_banned?: boolean | null
           is_subscribed?: boolean | null
           name: string
-          topic: string
+          topic?: string | null
         }
         Update: {
-          age?: number
+          age?: number | null
           created_at?: string | null
           email?: string
           goals?: string[] | null
@@ -250,7 +229,7 @@ export type Database = {
           is_banned?: boolean | null
           is_subscribed?: boolean | null
           name?: string
-          topic?: string
+          topic?: string | null
         }
         Relationships: [
           {

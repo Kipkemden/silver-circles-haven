@@ -1,5 +1,5 @@
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -14,7 +14,7 @@ const ProtectedRoute = ({
   requireSubscription = false,
   adminOnly = false
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isBanned, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
   // Show loading state while checking authentication
@@ -35,7 +35,7 @@ const ProtectedRoute = ({
   }
   
   // Redirect banned users to support page
-  if (isBanned) {
+  if (user?.isBanned) {
     return <Navigate to="/support" replace />;
   }
 

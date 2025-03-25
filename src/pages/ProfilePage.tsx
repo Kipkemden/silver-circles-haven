@@ -1,12 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { toast } from "sonner";
 
 interface ProfileFormData {
   name: string;
@@ -26,6 +29,7 @@ const ProfilePage = () => {
     goals: [] as string[],
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -39,7 +43,7 @@ const ProfilePage = () => {
     }
   }, [user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -47,8 +51,7 @@ const ProfilePage = () => {
     }));
   };
 
-  const handleGoalsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
+  const handleGoalsChange = (value: string, checked: boolean) => {
     setFormData(prev => {
       let newGoals = [...prev.goals];
       if (checked) {
@@ -62,17 +65,29 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSubmitting) return;
 
-    const result = await updateProfile(user.id, {
-      name: formData.name,
-      age: parseInt(formData.age),
-      topic: formData.topic,
-      goals: formData.goals,
-    });
+    try {
+      setIsSubmitting(true);
+      
+      const result = await updateProfile({
+        name: formData.name,
+        age: parseInt(formData.age) || undefined,
+        topic: formData.topic,
+        goals: formData.goals,
+      });
 
-    if (result.success) {
-      setIsEditing(false);
+      if (result.success) {
+        setIsEditing(false);
+        toast.success("Profile updated successfully");
+      } else {
+        toast.error(result.error || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -103,10 +118,12 @@ const ProfilePage = () => {
                 <CardTitle className="text-2xl font-bold">Your Profile</CardTitle>
                 {isEditing ? (
                   <div className="space-x-2">
-                    <Button variant="ghost" onClick={() => setIsEditing(false)}>
+                    <Button variant="ghost" onClick={() => setIsEditing(false)} disabled={isSubmitting}>
                       Cancel
                     </Button>
-                    <Button onClick={handleSubmit}>Save</Button>
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                      {isSubmitting ? "Saving..." : "Save"}
+                    </Button>
                   </div>
                 ) : (
                   <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
@@ -121,120 +138,84 @@ const ProfilePage = () => {
                   <TabsContent value="account" className="space-y-4">
                     <div className="grid gap-4">
                       <div className="space-y-2">
-                        <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                          Name
-                        </label>
+                        <Label htmlFor="name">Name</Label>
                         <Input
                           id="name"
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          disabled={!isEditing}
+                          disabled={!isEditing || isSubmitting}
                           placeholder="Your Name"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                          Email
-                        </label>
+                        <Label htmlFor="email">Email</Label>
                         <Input
                           id="email"
                           name="email"
                           type="email"
                           value={formData.email}
                           onChange={handleChange}
-                          disabled
+                          disabled={true}
                           placeholder="Your Email"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="age" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                          Age
-                        </label>
+                        <Label htmlFor="age">Age</Label>
                         <Input
                           id="age"
                           name="age"
                           type="number"
                           value={formData.age}
                           onChange={handleChange}
-                          disabled={!isEditing}
+                          disabled={!isEditing || isSubmitting}
                           placeholder="Your Age"
                         />
                       </div>
                     </div>
                   </TabsContent>
                   <TabsContent value="preferences">
-                    <div className="space-y-2">
-                      <label htmlFor="topic" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                        Preferred Topic
-                      </label>
-                      <Input
-                        id="topic"
-                        name="topic"
-                        value={formData.topic}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        placeholder="e.g., Retirement, Dating"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                        Your Goals
-                      </label>
-                      <div className="flex flex-col space-y-2">
-                        <div>
-                          <label className="inline-flex items-center space-x-2">
-                            <Input
-                              type="checkbox"
-                              value="Financial Security"
-                              checked={formData.goals.includes("Financial Security")}
-                              onChange={handleGoalsChange}
-                              disabled={!isEditing}
-                              className="h-4 w-4 rounded"
-                            />
-                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                              Financial Security
-                            </span>
-                          </label>
-                        </div>
-                        <div>
-                          <label className="inline-flex items-center space-x-2">
-                            <Input
-                              type="checkbox"
-                              value="Social Connections"
-                              checked={formData.goals.includes("Social Connections")}
-                              onChange={handleGoalsChange}
-                              disabled={!isEditing}
-                              className="h-4 w-4 rounded"
-                            />
-                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                              Social Connections
-                            </span>
-                          </label>
-                        </div>
-                        <div>
-                          <label className="inline-flex items-center space-x-2">
-                            <Input
-                              type="checkbox"
-                              value="Personal Growth"
-                              checked={formData.goals.includes("Personal Growth")}
-                              onChange={handleGoalsChange}
-                              disabled={!isEditing}
-                              className="h-4 w-4 rounded"
-                            />
-                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                              Personal Growth
-                            </span>
-                          </label>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="topic">Preferred Topic</Label>
+                        <Input
+                          id="topic"
+                          name="topic"
+                          value={formData.topic}
+                          onChange={handleChange}
+                          disabled={!isEditing || isSubmitting}
+                          placeholder="e.g., Retirement, Dating"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Your Goals</Label>
+                        <div className="flex flex-col space-y-2">
+                          {["Financial Security", "Social Connections", "Personal Growth"].map((goal) => (
+                            <div key={goal} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`goal-${goal}`}
+                                checked={formData.goals.includes(goal)}
+                                onCheckedChange={(checked) => 
+                                  handleGoalsChange(goal, checked as boolean)
+                                }
+                                disabled={!isEditing || isSubmitting}
+                              />
+                              <Label htmlFor={`goal-${goal}`} className="cursor-pointer">
+                                {goal}
+                              </Label>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
                   </TabsContent>
                 </Tabs>
+                <div className="pt-4">
+                  <Button variant="destructive" onClick={handleLogout} disabled={isSubmitting}>
+                    Logout
+                  </Button>
+                </div>
               </CardContent>
-              <Button variant="destructive" onClick={handleLogout}>
-                Logout
-              </Button>
             </Card>
           </div>
         </div>
