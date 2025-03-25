@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,6 +91,7 @@ const ProfilePage = () => {
   };
 
   const handleLogout = async () => {
+    console.log("Logout button clicked");
     await logout();
   };
 
@@ -105,6 +105,8 @@ const ProfilePage = () => {
       </div>
     );
   }
+
+  console.log("isSubmitting state:", isSubmitting);
 
   return (
     <div className="min-h-screen flex flex-col">

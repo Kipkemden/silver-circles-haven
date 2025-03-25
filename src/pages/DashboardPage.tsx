@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,8 +14,9 @@ import { Calendar, MessageSquare, Video, Clock, Users, ArrowRight } from "lucide
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ForumPost from "@/components/ForumPost";
+import { useAuth } from "@/hooks/useAuth";
 
-// Mock data
+// Mock data (can be replaced with real data from Supabase later)
 const upcomingMeeting = {
   topic: "Reinventing Retirement",
   groupName: "Retirement Circle #1",
@@ -63,43 +63,53 @@ const privatePosts = [
 ];
 
 const DashboardPage = () => {
-  const [userData, setUserData] = useState<any>(null);
+  const { user, isLoading, isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    // In a real app, this would fetch user data from Supabase
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
-  }, []);
-
-  if (!userData) {
+  // Handle loading and authentication states
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-36 bg-silver-200 rounded mb-4"></div>
-          <div className="h-6 w-72 bg-silver-200 rounded"></div>
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-12 w-36 bg-gray-200 rounded"></div> {/* Changed silver-200 to gray-200 */}
+          <div className="h-6 w-72 bg-gray-200 rounded"></div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-600">Please log in to access your dashboard.</p>
+      </div>
+    );
+  }
 
+  // If authenticated but no user data (edge case)
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-600">Error: User data not found. Please try logging in again.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      
       <main className="flex-grow pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-serif font-medium mb-2">
-              Welcome, {userData.name.split(" ")[0]}
+              Welcome, {user.name?.split(" ")[0] || "User"}
             </h1>
-            <p className="text-silver-600 mb-10">
-              Your {userData.topic === "retirement" ? "Reinventing Retirement" : "Silver Singles"} circle is here to support you.
+            <p className="text-gray-600 mb-10"> {/* Changed silver-600 to gray-600 */}
+              Your {user.topic === "retirement" ? "Reinventing Retirement" : "Silver Singles"} circle is here to support you.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <Card className="md:col-span-2 border border-silver-200">
+              <Card className="md:col-span-2 border border-gray-200"> {/* Changed silver-200 to gray-200 */}
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl flex items-center">
                     <Calendar className="mr-2 h-5 w-5 text-primary" />
@@ -110,11 +120,11 @@ const DashboardPage = () => {
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div className="mb-4 md:mb-0">
                       <h3 className="font-medium text-lg">{upcomingMeeting.topic}</h3>
-                      <div className="flex items-center text-silver-600 mt-1">
+                      <div className="flex items-center text-gray-600 mt-1"> {/* Changed silver-600 to gray-600 */}
                         <Users className="mr-2 h-4 w-4" />
                         <span>{upcomingMeeting.groupName}</span>
                       </div>
-                      <div className="flex items-center text-silver-600 mt-1">
+                      <div className="flex items-center text-gray-600 mt-1"> {/* Changed silver-600 to gray-600 */}
                         <Clock className="mr-2 h-4 w-4" />
                         <span>{formatMeetingDate(upcomingMeeting.date)}</span>
                       </div>
@@ -131,22 +141,20 @@ const DashboardPage = () => {
                     </Button>
                   </div>
                 </CardContent>
-                <CardFooter className="border-t pt-4 text-silver-500">
+                <CardFooter className="border-t pt-4 text-gray-500"> {/* Changed silver-500 to gray-500 */}
                   <p>A calendar invitation has been sent to your email with the meeting details.</p>
                 </CardFooter>
               </Card>
 
-              <Card className="border border-silver-200">
+              <Card className="border border-gray-200"> {/* Changed silver-200 to gray-200 */}
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl flex items-center">
                     <MessageSquare className="mr-2 h-5 w-5 text-primary" />
                     Your Circle Forum
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-silver-600">
-                  <p>
-                    Connect with your circle members anytime in your private forum.
-                  </p>
+                <CardContent className="text-gray-600"> {/* Changed silver-600 to gray-600 */}
+                  <p>Connect with your circle members anytime in your private forum.</p>
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
@@ -173,7 +181,6 @@ const DashboardPage = () => {
                   {privatePosts.map((post) => (
                     <ForumPost key={post.id} post={post} isPublic={false} />
                   ))}
-                  
                   <div className="text-center mt-6">
                     <Button asChild variant="outline" className="rounded-full">
                       <Link to="/forum/private/my-circle">View All Posts</Link>
@@ -182,13 +189,13 @@ const DashboardPage = () => {
                 </TabsContent>
                 
                 <TabsContent value="resources" className="mt-0">
-                  <Card className="border border-silver-200 mb-6">
+                  <Card className="border border-gray-200 mb-6"> {/* Changed silver-200 to gray-200 */}
                     <CardHeader>
                       <CardTitle>Retirement Planning Guide</CardTitle>
                       <CardDescription>PDF Resource • Added Dec 15, 2023</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-silver-600">
+                      <p className="text-gray-600"> {/* Changed silver-600 to gray-600 */}
                         A comprehensive guide to financial, emotional, and social aspects of retirement planning.
                       </p>
                     </CardContent>
@@ -197,7 +204,7 @@ const DashboardPage = () => {
                     </CardFooter>
                   </Card>
                   
-                  <Card className="border border-silver-200">
+                  <Card className="border border-gray-200"> {/* Changed silver-200 to gray-200 */}
                     <CardHeader>
                       <CardTitle>Circle Discussion Topics</CardTitle>
                       <CardDescription>Upcoming discussion themes for your circle</CardDescription>
@@ -223,11 +230,11 @@ const DashboardPage = () => {
               </Tabs>
             </div>
 
-            <div className="bg-silver-50 rounded-2xl p-8 border border-silver-200">
+            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200"> {/* Changed silver-50/200 to gray-50/200 */}
               <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <div className="mb-6 md:mb-0">
                   <h2 className="text-2xl font-serif mb-2">Enhance Your Experience</h2>
-                  <p className="text-silver-600 max-w-xl">
+                  <p className="text-gray-600 max-w-xl"> {/* Changed silver-600 to gray-600 */}
                     Book a 1:1 session with our expert facilitator for personalized guidance on your specific challenges.
                   </p>
                 </div>

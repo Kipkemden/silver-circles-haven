@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,7 +26,7 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   return null;
 };
 
@@ -48,47 +47,47 @@ const App = () => (
             <Route path="/forum/public" element={<Navigate to="/forum/public/retirement-tips" replace />} />
             <Route path="/forum/public/:id" element={<ForumPage />} />
             <Route path="/support" element={<SupportPage />} />
-            
+
             {/* Protected routes - require authentication */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <DashboardPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
                 <ProtectedRoute>
                   <ProfilePage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/forum/private" 
+            <Route
+              path="/forum/private"
               element={
                 <ProtectedRoute>
                   <Navigate to="/forum/private/my-circle" replace />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/forum/private/:id" 
+            <Route
+              path="/forum/private/:id"
               element={
                 <ProtectedRoute>
                   <ForumPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/admin" 
+            <Route
+              path="/admin"
               element={
                 <ProtectedRoute adminOnly={true}>
                   <AdminPage />
                 </ProtectedRoute>
-              } 
+              }
             />
             <Route
               path="/subscription"
@@ -98,7 +97,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
