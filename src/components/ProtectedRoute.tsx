@@ -39,13 +39,9 @@ const ProtectedRoute = ({
     return <Navigate to="/support" replace />;
   }
 
-  // For now, we'll skip subscription checks since that will be implemented later
-  // Just pass through if subscription is required but not implemented yet
+  // Check subscription status if required
   if (requireSubscription && user && !user.isSubscribed) {
-    // For now, we'll allow access but this will be updated later
-    // when payment functionality is implemented
-    console.log("Subscription required but not checking yet - will be implemented later");
-    // return <Navigate to="/subscription" replace />;
+    return <Navigate to="/subscription" replace />;
   }
 
   // Check admin status if required

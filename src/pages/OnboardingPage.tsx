@@ -33,6 +33,7 @@ const OnboardingPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   
+  // Goals options by topic
   const goalsByTopic: Record<string, string[]> = {
     "retirement": [
       "Find purpose after work",
@@ -53,9 +54,11 @@ const OnboardingPage = () => {
     "": [] // Default empty array for when no topic is selected
   };
   
+  // Helper function to update form data
   const updateFormData = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     
+    // Clear error when field is updated
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -65,6 +68,7 @@ const OnboardingPage = () => {
     }
   };
   
+  // Toggle a goal in the goals array
   const toggleGoal = (goal: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -74,6 +78,7 @@ const OnboardingPage = () => {
     }));
   };
   
+  // Validation functions
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     
@@ -129,6 +134,7 @@ const OnboardingPage = () => {
     return Object.keys(newErrors).length === 0;
   };
   
+  // Step navigation
   const nextStep = () => {
     let isValid = false;
     
@@ -154,12 +160,14 @@ const OnboardingPage = () => {
     window.scrollTo(0, 0);
   };
   
+  // Form submission
   const handleSubmit = async () => {
     if (!validateStep3()) return;
     
     try {
       setIsLoading(true);
       
+      // Prepare data for API call - ensure goals array is properly formatted
       const userData = {
         name: formData.name,
         email: formData.email,
@@ -180,6 +188,7 @@ const OnboardingPage = () => {
       
       toast.success("Registration successful! Welcome to Silver Circles.");
       
+      // Redirect to dashboard after successful registration
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
@@ -192,6 +201,7 @@ const OnboardingPage = () => {
     }
   };
   
+  // Step rendering functions
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -272,6 +282,7 @@ const OnboardingPage = () => {
           value={formData.topic}
           onValueChange={(value) => {
             updateFormData("topic", value);
+            // Reset goals when topic changes
             updateFormData("goals", []);
           }}
           className="grid grid-cols-1 gap-4"
@@ -353,6 +364,7 @@ const OnboardingPage = () => {
     </div>
   );
   
+  // Render the current step content
   const renderStepContent = () => {
     switch (step) {
       case 1:
@@ -384,6 +396,7 @@ const OnboardingPage = () => {
                   {step === 3 && "What are you hoping to achieve?"}
                 </CardDescription>
                 
+                {/* Progress indicator */}
                 <div className="flex items-center justify-between mt-6">
                   {[1, 2, 3].map((s) => (
                     <div

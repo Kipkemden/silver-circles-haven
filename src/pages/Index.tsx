@@ -1,58 +1,21 @@
 
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
   
+  useEffect(() => {
+    // Redirect to landing page
+    navigate('/');
+  }, [navigate]);
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-grow flex items-center justify-center bg-gradient-to-b from-blue-50 to-white py-20">
-        <div className="container mx-auto px-4 md:px-6 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium mb-6">
-            Welcome to Silver Circles
-          </h1>
-          <p className="text-xl text-silver-600 max-w-3xl mx-auto mb-10">
-            A supportive community for seniors looking to connect, share experiences, and navigate life's transitions together.
-          </p>
-          
-          {isLoading ? (
-            <div className="animate-pulse inline-block bg-primary/20 rounded-full px-12 py-4 w-48 h-14"></div>
-          ) : isAuthenticated ? (
-            <div className="space-y-4">
-              <Button asChild size="lg" className="rounded-full px-8">
-                <Link to="/forum/private/my-circle">
-                  Go to My Circle
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <p className="text-silver-500 mt-2">
-                Connect with your community and access private discussions
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Button asChild size="lg" className="rounded-full px-8">
-                <Link to="/onboarding">
-                  Join Silver Circles
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <p className="text-silver-500 mt-2">
-                Already a member? <Link to="/login" className="text-primary hover:underline">Login here</Link>
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
-      
-      <Footer />
+    <div className="min-h-screen flex items-center justify-center bg-silver-50">
+      <div className="text-center">
+        <h1 className="text-4xl font-serif font-bold mb-4">Redirecting...</h1>
+        <p className="text-xl text-silver-600">Please wait while we redirect you to our homepage.</p>
+      </div>
     </div>
   );
 };

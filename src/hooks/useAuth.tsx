@@ -166,7 +166,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Modified registration to use signUp instead of custom implementation
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -181,20 +180,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       if (error) {
-        console.error("Registration error:", error);
         toast.error(error.message);
         return { success: false, error: error.message };
       }
       
-      // Success - for now we'll skip subscription check since it will be implemented later
-      toast.success("Registration successful!");
-      
-      // Automatically log in the user after successful registration
-      if (data.user) {
-        // Note: No need to manually log in, the auth state change will handle this
-        return { success: true };
-      }
-      
+      toast.success("Registration successful! Check your email to confirm your account.");
       return { success: true };
     } catch (error: any) {
       console.error("Registration error:", error);

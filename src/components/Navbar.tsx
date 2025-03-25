@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User, Home } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,29 +33,6 @@ const Navbar = () => {
     closeMenu();
   };
 
-  // Public navigation items - accessible to all users
-  const publicNavItems = [
-    {
-      label: "Community",
-      path: "/forum/public/retirement-tips",
-      isActive: location.pathname.includes("/forum/public")
-    }
-  ];
-
-  // Private navigation items - only for authenticated users
-  const privateNavItems = [
-    {
-      label: "My Circle",
-      path: "/forum/private/my-circle",
-      isActive: location.pathname.includes("/forum/private")
-    },
-    {
-      label: "Profile",
-      path: "/profile",
-      isActive: location.pathname === "/profile"
-    }
-  ];
-
   return (
     <header
       className={cn(
@@ -75,41 +52,39 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          {/* Public navigation - always visible */}
-          {publicNavItems.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "text-silver-700 hover:text-primary transition-colors font-medium",
-                item.isActive && "text-primary"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          <Link
+            to="/forum/public/retirement-tips"
+            className={cn(
+              "text-silver-700 hover:text-primary transition-colors font-medium",
+              location.pathname.includes("/forum/public") && "text-primary"
+            )}
+          >
+            Community
+          </Link>
           
-          {isLoading ? (
-            // Loading state
-            <div className="animate-pulse flex space-x-4">
-              <div className="rounded-full bg-silver-200 h-10 w-20"></div>
-              <div className="rounded-full bg-silver-200 h-10 w-20"></div>
-            </div>
-          ) : isAuthenticated ? (
-            // Authenticated user menu
+          {isAuthenticated ? (
             <>
-              {privateNavItems.map(item => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "text-silver-700 hover:text-primary transition-colors font-medium",
-                    item.isActive && "text-primary"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              <Link
+                to="/dashboard"
+                className={cn(
+                  "text-silver-700 hover:text-primary transition-colors font-medium",
+                  location.pathname === "/dashboard" && "text-primary"
+                )}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/profile"
+                className={cn(
+                  "text-silver-700 hover:text-primary transition-colors font-medium",
+                  location.pathname === "/profile" && "text-primary"
+                )}
+              >
+                Profile
+              </Link>
+              <Button asChild size="lg" className="rounded-full px-6">
+                <Link to="/forum/private/my-circle">My Circle</Link>
+              </Button>
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
@@ -121,15 +96,9 @@ const Navbar = () => {
               </Button>
             </>
           ) : (
-            // Guest menu
-            <>
-              <Button asChild variant="ghost" size="lg">
-                <Link to="/login">Log In</Link>
-              </Button>
-              <Button asChild size="lg" className="rounded-full px-6">
-                <Link to="/onboarding">Sign Up Now</Link>
-              </Button>
-            </>
+            <Button asChild size="lg" className="rounded-full px-6">
+              <Link to="/onboarding">Sign Up Now</Link>
+            </Button>
           )}
         </nav>
 
@@ -147,37 +116,39 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg animate-fade-in">
           <nav className="container mx-auto px-4 py-6 flex flex-col space-y-4">
-            {/* Public navigation - always visible */}
-            {publicNavItems.map(item => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="text-silver-700 hover:text-primary py-2 text-lg"
-                onClick={closeMenu}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <Link
+              to="/forum/public/retirement-tips"
+              className="text-silver-700 hover:text-primary py-2 text-lg"
+              onClick={closeMenu}
+            >
+              Community
+            </Link>
             
-            {isLoading ? (
-              // Loading state
-              <div className="animate-pulse space-y-4">
-                <div className="rounded bg-silver-200 h-10 w-full"></div>
-                <div className="rounded bg-silver-200 h-10 w-full"></div>
-              </div>
-            ) : isAuthenticated ? (
-              // Authenticated user menu
+            {isAuthenticated ? (
               <>
-                {privateNavItems.map(item => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className="text-silver-700 hover:text-primary py-2 text-lg"
-                    onClick={closeMenu}
-                  >
-                    {item.label}
+                <Link
+                  to="/dashboard"
+                  className="text-silver-700 hover:text-primary py-2 text-lg"
+                  onClick={closeMenu}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/profile"
+                  className="text-silver-700 hover:text-primary py-2 text-lg"
+                  onClick={closeMenu}
+                >
+                  Profile
+                </Link>
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full justify-center rounded-full mt-2"
+                >
+                  <Link to="/forum/private/my-circle" onClick={closeMenu}>
+                    My Circle
                   </Link>
-                ))}
+                </Button>
                 <Button
                   onClick={handleLogout}
                   variant="outline"
@@ -189,25 +160,15 @@ const Navbar = () => {
                 </Button>
               </>
             ) : (
-              // Guest menu
-              <>
-                <Link
-                  to="/login"
-                  className="text-silver-700 hover:text-primary py-2 text-lg"
-                  onClick={closeMenu}
-                >
-                  Log In
+              <Button
+                asChild
+                size="lg"
+                className="w-full justify-center rounded-full mt-2"
+              >
+                <Link to="/onboarding" onClick={closeMenu}>
+                  Sign Up Now
                 </Link>
-                <Button
-                  asChild
-                  size="lg"
-                  className="w-full justify-center rounded-full mt-2"
-                >
-                  <Link to="/onboarding" onClick={closeMenu}>
-                    Sign Up Now
-                  </Link>
-                </Button>
-              </>
+              </Button>
             )}
           </nav>
         </div>
