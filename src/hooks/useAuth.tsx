@@ -86,9 +86,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setUser(null);
           setIsAuthenticated(false);
-          setIsLoading(false);
-          navigate("/login");
         }
+        setIsLoading(false);
       }
     );
 

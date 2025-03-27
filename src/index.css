@@ -1,8 +1,8 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Tailwind custom theme */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -57,6 +57,12 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  #root {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
   }
 }
 
@@ -178,5 +184,66 @@
   .prose-lg {
     font-size: 1rem;
     line-height: 1.6;
+  }
+}
+
+/* Base styles from app.css */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Loader animation */
+.loader {
+  --d: 22px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  color: #63b3ed; /* Tailwind blue-400 compatible */
+  box-shadow: 
+    calc(1 * var(--d))      calc(0 * var(--d))     0 0,
+    calc(0.707 * var(--d))  calc(0.707 * var(--d)) 0 1px,
+    calc(0 * var(--d))      calc(1 * var(--d))     0 2px,
+    calc(-0.707 * var(--d)) calc(0.707 * var(--d)) 0 3px,
+    calc(-1 * var(--d))     calc(0 * var(--d))     0 4px,
+    calc(-0.707 * var(--d)) calc(-0.707 * var(--d)) 0 5px,
+    calc(0 * var(--d))      calc(-1 * var(--d))    0 6px;
+  animation: l27 1s infinite steps(8);
+}
+
+@keyframes l27 {
+  100% {
+    transform: rotate(1turn);
   }
 }
