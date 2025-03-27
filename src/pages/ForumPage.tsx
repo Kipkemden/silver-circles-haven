@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,15 +16,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import {
-  Lock,
-  MessageSquare,
-  PlusCircle,
-  Search,
-  XCircle,
-  LogOut
-} from "lucide-react";
+import { Lock, MessageSquare, PlusCircle, Search, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
@@ -33,7 +24,6 @@ import Footer from "@/components/Footer";
 import ForumPost from "@/components/ForumPost";
 import SubscriptionCTA from "@/components/SubscriptionCTA";
 
-// Mock forum data
 const publicForums = {
   "retirement-tips": {
     id: "retirement-tips",
@@ -47,10 +37,7 @@ const publicForums = {
         createdAt: "2023-11-15T10:30:00Z",
         likesCount: 24,
         commentsCount: 18,
-        author: {
-          name: "Margaret W.",
-          avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-        },
+        author: { name: "Margaret W.", avatar: "https://randomuser.me/api/portraits/women/65.jpg" },
       },
       {
         id: "rt2",
@@ -59,10 +46,7 @@ const publicForums = {
         createdAt: "2023-11-25T09:45:00Z",
         likesCount: 32,
         commentsCount: 15,
-        author: {
-          name: "Thomas J.",
-          avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-        },
+        author: { name: "Thomas J.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" },
       },
       {
         id: "rt3",
@@ -71,10 +55,7 @@ const publicForums = {
         createdAt: "2023-12-02T11:20:00Z",
         likesCount: 45,
         commentsCount: 22,
-        author: {
-          name: "Diane M.",
-          avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-        },
+        author: { name: "Diane M.", avatar: "https://randomuser.me/api/portraits/women/32.jpg" },
       },
     ],
   },
@@ -90,10 +71,7 @@ const publicForums = {
         createdAt: "2023-11-20T14:45:00Z",
         likesCount: 36,
         commentsCount: 29,
-        author: {
-          name: "Robert T.",
-          avatar: "https://randomuser.me/api/portraits/men/62.jpg",
-        },
+        author: { name: "Robert T.", avatar: "https://randomuser.me/api/portraits/men/62.jpg" },
       },
       {
         id: "da2",
@@ -102,10 +80,7 @@ const publicForums = {
         createdAt: "2023-11-28T16:30:00Z",
         likesCount: 41,
         commentsCount: 27,
-        author: {
-          name: "Helen P.",
-          avatar: "https://randomuser.me/api/portraits/women/58.jpg",
-        },
+        author: { name: "Helen P.", avatar: "https://randomuser.me/api/portraits/women/58.jpg" },
       },
       {
         id: "da3",
@@ -114,10 +89,7 @@ const publicForums = {
         createdAt: "2023-12-10T13:15:00Z",
         likesCount: 29,
         commentsCount: 18,
-        author: {
-          name: "James L.",
-          avatar: "https://randomuser.me/api/portraits/men/52.jpg",
-        },
+        author: { name: "James L.", avatar: "https://randomuser.me/api/portraits/men/52.jpg" },
       },
     ],
   },
@@ -133,10 +105,7 @@ const publicForums = {
         createdAt: "2023-12-05T09:15:00Z",
         likesCount: 42,
         commentsCount: 12,
-        author: {
-          name: "Carol L.",
-          avatar: "https://randomuser.me/api/portraits/women/42.jpg",
-        },
+        author: { name: "Carol L.", avatar: "https://randomuser.me/api/portraits/women/42.jpg" },
       },
       {
         id: "ac2",
@@ -145,10 +114,7 @@ const publicForums = {
         createdAt: "2023-12-12T15:45:00Z",
         likesCount: 38,
         commentsCount: 31,
-        author: {
-          name: "Michael B.",
-          avatar: "https://randomuser.me/api/portraits/men/39.jpg",
-        },
+        author: { name: "Michael B.", avatar: "https://randomuser.me/api/portraits/men/39.jpg" },
       },
       {
         id: "ac3",
@@ -157,10 +123,7 @@ const publicForums = {
         createdAt: "2023-12-18T11:30:00Z",
         likesCount: 27,
         commentsCount: 24,
-        author: {
-          name: "Patricia H.",
-          avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-        },
+        author: { name: "Patricia H.", avatar: "https://randomuser.me/api/portraits/women/68.jpg" },
       },
     ],
   },
@@ -179,10 +142,7 @@ const privateForums = {
         createdAt: "2023-12-15T14:30:00Z",
         likesCount: 12,
         commentsCount: 8,
-        author: {
-          name: "David S.",
-          avatar: "https://randomuser.me/api/portraits/men/55.jpg",
-        },
+        author: { name: "David S.", avatar: "https://randomuser.me/api/portraits/men/55.jpg" },
       },
       {
         id: "pc2",
@@ -191,10 +151,7 @@ const privateForums = {
         createdAt: "2023-12-18T10:15:00Z",
         likesCount: 15,
         commentsCount: 10,
-        author: {
-          name: "Linda M.",
-          avatar: "https://randomuser.me/api/portraits/women/52.jpg",
-        },
+        author: { name: "Linda M.", avatar: "https://randomuser.me/api/portraits/women/52.jpg" },
       },
       {
         id: "pc3",
@@ -203,10 +160,7 @@ const privateForums = {
         createdAt: "2023-12-20T16:45:00Z",
         likesCount: 18,
         commentsCount: 14,
-        author: {
-          name: "Richard K.",
-          avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-        },
+        author: { name: "Richard K.", avatar: "https://randomuser.me/api/portraits/men/67.jpg" },
       },
     ],
   },
@@ -215,62 +169,56 @@ const privateForums = {
 const ForumPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [currentForum, setCurrentForum] = useState<any>(null);
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [filteredPosts, setFilteredPosts] = useState<any[]>([]);
-  const [forumType, setForumType] = useState<'public' | 'private'>('public');
+  const [forumType, setForumType] = useState<"public" | "private">("public");
   const [forumId, setForumId] = useState<string | undefined>(id);
 
-  // Set default forum type and ID if none are provided
   useEffect(() => {
     const path = window.location.pathname;
-    const pathParts = path.split('/');
-    
-    // Determine forum type from URL
-    if (pathParts.includes('private')) {
-      setForumType('private');
-      const privateId = pathParts[pathParts.indexOf('private') + 1];
-      setForumId(privateId || 'my-circle');
-    } else {
-      setForumType('public');
-      const publicId = pathParts[pathParts.indexOf('public') + 1];
-      setForumId(publicId || 'retirement-tips');
-    }
-  }, [window.location.pathname]);
+    const pathParts = path.split("/");
 
-  // Load forum data based on type and ID
+    if (pathParts.includes("private")) {
+      setForumType("private");
+      const privateId = pathParts[pathParts.indexOf("private") + 1];
+      setForumId(privateId || "my-circle");
+    } else {
+      setForumType("public");
+      const publicId = pathParts[pathParts.indexOf("public") + 1];
+      setForumId(publicId || "retirement-tips");
+    }
+  }, []);
+
   useEffect(() => {
-    if (forumType === 'public') {
-      const validId = forumId || 'retirement-tips';
+    if (authLoading) return;
+
+    if (forumType === "public") {
+      const validId = forumId || "retirement-tips";
       if (publicForums[validId as keyof typeof publicForums]) {
         setCurrentForum(publicForums[validId as keyof typeof publicForums]);
         setFilteredPosts(publicForums[validId as keyof typeof publicForums].posts);
       } else {
-        // Default to retirement-tips if invalid ID
-        navigate('/forum/public/retirement-tips');
+        navigate("/forum/public/retirement-tips");
       }
-    } else if (forumType === 'private') {
+    } else if (forumType === "private") {
       if (!isAuthenticated) {
-        // Redirect unauthenticated users trying to access private forums
-        navigate('/onboarding');
+        navigate("/login");
         return;
       }
-      
-      const validId = forumId || 'my-circle';
+      const validId = forumId || "my-circle";
       if (privateForums[validId as keyof typeof privateForums]) {
         setCurrentForum(privateForums[validId as keyof typeof privateForums]);
         setFilteredPosts(privateForums[validId as keyof typeof privateForums].posts);
       } else {
-        // Default to my-circle if invalid ID
-        navigate('/forum/private/my-circle');
+        navigate("/forum/private/my-circle");
       }
     }
-  }, [forumType, forumId, isAuthenticated, navigate]);
+  }, [forumType, forumId, isAuthenticated, authLoading, navigate]);
 
-  // Filter posts based on search query
   useEffect(() => {
     if (currentForum && currentForum.posts) {
       if (searchQuery.trim() === "") {
@@ -295,16 +243,21 @@ const ForumPage = () => {
       return;
     }
 
-    // In a real app, this would send data to Supabase
     toast.success("Your post has been published!");
     setNewPost({ title: "", content: "" });
     setShowComposeForm(false);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-serif mb-2">Loading...</h2>
+          <p className="text-silver-600">Loading, please wait as we verify your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentForum) {
     return (
@@ -329,7 +282,6 @@ const ForumPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
       <main className="flex-grow pt-32 pb-20">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-5xl mx-auto">
@@ -345,14 +297,12 @@ const ForumPage = () => {
                 </div>
                 <p className="text-silver-600">{currentForum.description}</p>
               </div>
-
               <div className="flex items-center gap-2 mt-4 md:mt-0">
                 {forumType === "public" && !isAuthenticated && (
                   <Button asChild className="rounded-full">
                     <Link to="/onboarding">Subscribe to Post</Link>
                   </Button>
                 )}
-
                 {(forumType === "private" || isAuthenticated) && (
                   <Button
                     onClick={() => setShowComposeForm(true)}
@@ -360,17 +310,6 @@ const ForumPage = () => {
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
                     Create New Post
-                  </Button>
-                )}
-                
-                {isAuthenticated && (
-                  <Button 
-                    variant="outline"
-                    onClick={handleLogout} 
-                    className="flex items-center rounded-full"
-                  >
-                    <LogOut className="mr-2 h-5 w-5" />
-                    Logout
                   </Button>
                 )}
               </div>
@@ -389,31 +328,20 @@ const ForumPage = () => {
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Post Title"
-                      value={newPost.title}
-                      onChange={(e) =>
-                        setNewPost({ ...newPost, title: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Share your thoughts, questions, or experiences..."
-                      rows={5}
-                      value={newPost.content}
-                      onChange={(e) =>
-                        setNewPost({ ...newPost, content: e.target.value })
-                      }
-                    />
-                  </div>
+                  <Input
+                    placeholder="Post Title"
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  />
+                  <Textarea
+                    placeholder="Share your thoughts, questions, or experiences..."
+                    rows={5}
+                    value={newPost.content}
+                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  />
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowComposeForm(false)}
-                  >
+                  <Button variant="outline" onClick={() => setShowComposeForm(false)}>
                     Cancel
                   </Button>
                   <Button onClick={handleCreatePost}>Publish Post</Button>
@@ -424,25 +352,13 @@ const ForumPage = () => {
             {forumType === "public" && (
               <Tabs defaultValue={forumId || "retirement-tips"} className="mb-8">
                 <TabsList className="grid grid-cols-3 w-full md:w-auto">
-                  <TabsTrigger
-                    value="retirement-tips"
-                    asChild
-                    className="text-sm md:text-base"
-                  >
+                  <TabsTrigger value="retirement-tips" asChild className="text-sm md:text-base">
                     <Link to="/forum/public/retirement-tips">Retirement Tips</Link>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="dating-after-50"
-                    asChild
-                    className="text-sm md:text-base"
-                  >
+                  <TabsTrigger value="dating-after-50" asChild className="text-sm md:text-base">
                     <Link to="/forum/public/dating-after-50">Dating After 50</Link>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="ask-the-community"
-                    asChild
-                    className="text-sm md:text-base"
-                  >
+                  <TabsTrigger value="ask-the-community" asChild className="text-sm md:text-base">
                     <Link to="/forum/public/ask-the-community">Ask Community</Link>
                   </TabsTrigger>
                 </TabsList>
@@ -461,7 +377,7 @@ const ForumPage = () => {
               </div>
             </div>
 
-            {filteredPosts && filteredPosts.length > 0 ? (
+            {filteredPosts.length > 0 ? (
               <div>
                 {filteredPosts.map((post) => (
                   <ForumPost
@@ -474,19 +390,12 @@ const ForumPage = () => {
             ) : (
               <div className="text-center py-12">
                 <MessageSquare className="mx-auto h-12 w-12 text-silver-300" />
-                <h3 className="mt-4 text-xl font-medium text-silver-700">
-                  No posts found
-                </h3>
+                <h3 className="mt-4 text-xl font-medium text-silver-700">No posts found</h3>
                 <p className="mt-2 text-silver-500">
-                  {searchQuery
-                    ? "Try adjusting your search terms"
-                    : "Be the first to start a conversation"}
+                  {searchQuery ? "Try adjusting your search terms" : "Be the first to start a conversation"}
                 </p>
                 {(forumType === "private" || isAuthenticated) && !showComposeForm && (
-                  <Button
-                    onClick={() => setShowComposeForm(true)}
-                    className="mt-6"
-                  >
+                  <Button onClick={() => setShowComposeForm(true)} className="mt-6">
                     Create Post
                   </Button>
                 )}
@@ -496,10 +405,7 @@ const ForumPage = () => {
         </div>
       </main>
 
-      {forumType === "public" && !isAuthenticated && (
-        <SubscriptionCTA />
-      )}
-
+      {forumType === "public" && !isAuthenticated && <SubscriptionCTA />}
       <Footer />
     </div>
   );
