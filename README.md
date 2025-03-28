@@ -1,4 +1,5 @@
 # Welcome to your Lovable project
+[![Netlify Status](https://api.netlify.com/api/v1/badges/502f7c87-4ef6-492e-9973-398b9f1cafe2/deploy-status)](https://app.netlify.com/sites/silvercircles/deploys)
 
 ## Project info
 
