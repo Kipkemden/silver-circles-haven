@@ -36,6 +36,7 @@ interface AuthContextType {
   isLoading: boolean;
   user: UserProfile | null;
   session: Session | null;
+  lastActivity: number;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   register: (

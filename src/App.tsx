@@ -24,8 +24,30 @@ const ScrollToTop = () => {
   return null;
 };
 
-const App = () => (
-  <ErrorBoundary>
+const App = () => {
+  useEffect(() => {
+    const checkAuth = () => {
+      const lastActivity = parseInt(sessionStorage.getItem('lastActivity') || '0');
+      const now = Date.now();
+      if (now - lastActivity > 30 * 60 * 1000) { // 30 minutes
+        sessionStorage.clear();
+        window.location.href = '/login';
+      } else {
+        sessionStorage.setItem('lastActivity', now.toString());
+      }
+    };
+    
+    const interval = setInterval(checkAuth, 60000); // Check every minute
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
+
+  return (
+    <ErrorBoundary>
     <ScrollToTop />
     <Suspense fallback={<LoadingSpinner className="min-h-screen" />}>
       <Routes>
