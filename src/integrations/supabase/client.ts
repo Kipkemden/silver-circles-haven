@@ -2,13 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  throw new Error('Missing Supabase environment variables');
-}
-
 export const supabase = createClient<Database>(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  'https://dqftwndquhmxrprvxqzb.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZnR3bmRxdWhteHJwcnZ4cXpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI0NTkyNzEsImV4cCI6MjA1ODAzNTI3MX0.V3ib8LBF2wTDcXiLKY_wDZJccPjmBoayDsm8s6iOg0w',
   {
     auth: {
       autoRefreshToken: true,
