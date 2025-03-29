@@ -17,57 +17,30 @@ interface UserProfile {
   groupId?: string;
 }
 
-interface ProfileRow {
-  id: string;
-  name: string;
-  email: string;
-  age?: number;
-  topic?: string;
-  goals?: string[];
-  is_subscribed: boolean;
-  is_banned: boolean;
-  is_admin: boolean;
-  created_at?: string;
-  group_id?: string;
-}
-
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: UserProfile | null;
   session: Session | null;
-  lastActivity: number;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  register: (
-    userData: {
-      email: string;
-      password: string;
-      name?: string;
-      age?: number;
-      topic?: string;
-      goals?: string[];
-    }
-  ) => Promise<{ success: boolean; error?: string }>;
-  updateProfile: (data: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
+  register: (userData: { email: string; password: string; name?: string; age?: number; topic?: string; goals?: string[] }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const transformProfileData = (profile: any): UserProfile => {
-  return {
-    id: profile.id,
-    name: profile.name || "",
-    email: profile.email,
-    age: profile.age,
-    topic: profile.topic,
-    goals: profile.goals || [],
-    isSubscribed: profile.is_subscribed || false,
-    isBanned: profile.is_banned || false,
-    isAdmin: profile.is_admin || false,
-    groupId: profile.group_id,
-  };
-};
+const transformProfileData = (profile: any): UserProfile => ({
+  id: profile.id,
+  name: profile.name || "",
+  email: profile.email,
+  age: profile.age,
+  topic: profile.topic,
+  goals: profile.goals || [],
+  isSubscribed: profile.is_subscribed || false,
+  isBanned: profile.is_banned || false,
+  isAdmin: profile.is_admin || false,
+  groupId: profile.group_id,
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -80,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         setSession(newSession);
-
         if (newSession) {
           setIsAuthenticated(true);
           await refreshUserProfile(newSession.user.id);
@@ -94,33 +66,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        setIsLoading(true);
         const { data: { session }, error } = await supabase.auth.getSession();
-
         if (error) throw error;
 
         if (session) {
           setSession(session);
           setIsAuthenticated(true);
           await refreshUserProfile(session.user.id);
-        } else {
-          setIsAuthenticated(false);
-          setUser(null);
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
         toast.error("Failed to verify authentication. Please try logging in again.");
-        setIsAuthenticated(false);
-        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     initializeAuth();
-
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const refreshUserProfile = async (userId: string) => {
     try {
@@ -130,36 +94,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("id", userId)
         .single();
 
-      if (error && error.code !== "PGRST116") throw error;
-
-      if (!profile) {
-        const newProfileData: ProfileRow = {
-          id: userId,
-          email: session?.user.email || "",
-          name: "",
-          age: undefined,
-          topic: undefined,
-          goals: undefined,
-          is_subscribed: false,
-          is_banned: false,
-          is_admin: false,
-          group_id: undefined,
-        };
-        const { data: insertedProfile, error: insertError } = await supabase
-          .from("profiles")
-          .insert([newProfileData])
-          .select()
-          .single();
-        if (insertError) throw insertError;
-        setUser(transformProfileData(insertedProfile));
-      } else {
-        setUser(transformProfileData(profile));
-      }
+      if (error) throw error;
+      setUser(transformProfileData(profile));
     } catch (error) {
-      console.error("Error refreshing/creating profile:", error);
-      toast.error("Failed to load user profile. Please try again.");
-      setUser(null);
-      setIsAuthenticated(false);
+      console.error("Error fetching user profile:", error);
+      toast.error("Failed to load user profile");
     }
   };
 
@@ -171,15 +110,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password,
       });
 
-      if (error) {
-        toast.error(error.message);
-        return { success: false, error: error.message };
-      }
+      if (error) throw error;
 
+      setSession(data.session);
+      setIsAuthenticated(true);
+      await refreshUserProfile(data.user.id);
       navigate("/dashboard");
+      toast.success("Signed in successfully");
       return { success: true };
     } catch (error: any) {
-      console.error("Unexpected login error:", error);
+      console.error("Login error:", error);
       toast.error("Failed to sign in: " + error.message);
       return { success: false, error: error.message };
     } finally {
@@ -206,16 +146,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (
-    userData: {
-      email: string;
-      password: string;
-      name?: string;
-      age?: number;
-      topic?: string;
-      goals?: string[];
-    }
-  ) => {
+  const register = async (userData: {
+    email: string;
+    password: string;
+    name?: string;
+    age?: number;
+    topic?: string;
+    goals?: string[];
+  }) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -231,31 +169,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
       });
 
-      if (error) {
-        toast.error(error.message);
-        return { success: false, error: error.message };
-      }
+      if (error) throw error;
 
       if (data.user) {
-        const newProfileData: ProfileRow = {
+        await supabase.from("profiles").insert({
           id: data.user.id,
           email: userData.email,
-          name: userData.name || "",
+          name: userData.name,
           age: userData.age,
           topic: userData.topic,
-          goals: userData.goals || [],
-          is_subscribed: false,
-          is_banned: false,
-          is_admin: false,
-          group_id: undefined,
-        };
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert([newProfileData]);
-        if (insertError) throw insertError;
+          goals: userData.goals,
+        });
       }
 
-      toast.success("Registration successful! Check your email to confirm your account.");
+      toast.success("Registration successful! Please check your email to verify your account.");
       return { success: true };
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -266,56 +193,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfile = async (data: Partial<UserProfile>) => {
-    try {
-      setIsLoading(true);
-      if (!user?.id) {
-        return { success: false, error: "User not authenticated" };
-      }
-
-      const profileData: Partial<ProfileRow> = {};
-      if (data.name) profileData.name = data.name;
-      if (data.age !== undefined) profileData.age = data.age;
-      if (data.topic) profileData.topic = data.topic;
-      if (data.goals) profileData.goals = data.goals;
-      if (data.groupId) profileData.group_id = data.groupId;
-
-      const { data: updatedProfile, error } = await supabase
-        .from("profiles")
-        .update(profileData)
-        .eq("id", user.id)
-        .select()
-        .single();
-
-      if (error) {
-        toast.error(error.message);
-        return { success: false, error: error.message };
-      }
-
-      setUser(transformProfileData(updatedProfile));
-      toast.success("Profile updated successfully");
-      return { success: true };
-    } catch (error: any) {
-      console.error("Profile update error:", error);
-      toast.error("Failed to update profile: " + error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const value = {
-    isAuthenticated,
-    isLoading,
-    user,
-    session,
-    login,
-    logout,
-    register,
-    updateProfile,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{
+      isAuthenticated,
+      isLoading,
+      user,
+      session,
+      login,
+      logout,
+      register,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
