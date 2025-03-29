@@ -50,7 +50,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <ScrollToTop />
-      <Suspense fallback={<LoadingSpinner className="min-h-screen" />}>
+      <Suspense fallback={<LoadingSpinner className="min-h-[50vh]" />}>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
