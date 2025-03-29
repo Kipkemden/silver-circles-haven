@@ -1,17 +1,18 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Page components
-import LandingPage from "./pages/LandingPage";
-import OnboardingPage from "./pages/OnboardingPage";
-import LoginPage from "./pages/LoginPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import DashboardPage from "./pages/DashboardPage";
-import ForumPage from "./pages/ForumPage";
-import ProfilePage from "./pages/ProfilePage";
-import AdminPage from "./pages/AdminPage";
-import SupportPage from "./pages/SupportPage";
-import NotFound from "./pages/NotFound";
+// Lazy loaded page components
+import { lazy, Suspense } from "react";
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const ForumPage = lazy(() => import("./pages/ForumPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Scroll to top when navigating
@@ -24,9 +25,10 @@ const ScrollToTop = () => {
 };
 
 const App = () => (
-  <>
+  <ErrorBoundary>
     <ScrollToTop />
-    <Routes>
+    <Suspense fallback={<LoadingSpinner className="min-h-screen" />}>
+      <Routes>
       {/* Public routes - accessible without login */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
