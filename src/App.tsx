@@ -56,7 +56,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <ScrollToTop />
-      <Suspense fallback={<LoadingSpinner className="min-h-screen flex items-center justify-center" />}>
+      <Suspense fallback={<LoadingSpinner className="min-h-screen" message="Loading, please wait..." />}>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
