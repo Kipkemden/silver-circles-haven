@@ -27,23 +27,29 @@ const ScrollToTop = () => {
 
 const App = () => {
   useEffect(() => {
-    const checkAuth = () => {
-      const lastActivity = parseInt(sessionStorage.getItem('lastActivity') || '0');
-      const now = Date.now();
-      if (now - lastActivity > 30 * 60 * 1000) {
-        sessionStorage.clear();
-        window.location.href = '/login';
-      } else {
-        sessionStorage.setItem('lastActivity', now.toString());
+    const checkAuth = async () => {
+      try {
+        const session = await supabase.auth.getSession();
+        if (!session.data.session) {
+          window.location.href = '/login';
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
       }
     };
 
     const interval = setInterval(checkAuth, 60000);
-    window.addEventListener('storage', checkAuth);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        window.location.href = '/login';
+      }
+    });
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('storage', checkAuth);
+      subscription.unsubscribe();
     };
   }, []);
 
