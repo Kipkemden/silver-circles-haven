@@ -1,0 +1,87 @@
+[plugin:vite:react-swc] × the name `cn` is defined multiple times
+    ╭─[/home/runner/workspace/src/components/ui/loading-spinner.tsx:2:1]
+  1 │ 
+  2 │ import { cn } from "@/lib/utils"
+    ·          ─┬
+    ·           ╰── previous definition of `cn` here
+  3 │ 
+  4 │ export function LoadingSpinner({ className }: { className?: string }) {
+  5 │   return (
+  6 │     <div className={cn("loader", className)} role="status" aria-label="Loading">
+  7 │       <span className="sr-only">Loading...</span>
+  8 │     </div>
+  9 │   )
+ 10 │ }
+ 11 │ import { cn } from "@/lib/utils"
+    ·          ─┬
+    ·           ╰── `cn` redefined here
+ 12 │ 
+ 13 │ export function LoadingSpinner({ className }: { className?: string }) {
+ 14 │   return (
+    ╰────
+  × the name `LoadingSpinner` is defined multiple times
+    ╭─[/home/runner/workspace/src/components/ui/loading-spinner.tsx:4:1]
+  1 │ 
+  2 │ import { cn } from "@/lib/utils"
+  3 │ 
+  4 │ export function LoadingSpinner({ className }: { className?: string }) {
+    ·                 ───────┬──────
+    ·                        ╰── previous definition of `LoadingSpinner` here
+  5 │   return (
+  6 │     <div className={cn("loader", className)} role="status" aria-label="Loading">
+  7 │       <span className="sr-only">Loading...</span>
+  8 │     </div>
+  9 │   )
+ 10 │ }
+ 11 │ import { cn } from "@/lib/utils"
+ 12 │ 
+ 13 │ export function LoadingSpinner({ className }: { className?: string }) {
+    ·                 ───────┬──────
+    ·                        ╰── `LoadingSpinner` redefined here
+ 14 │   return (
+ 15 │     <div className={cn("flex items-center justify-center p-4", className)}>
+ 16 │       <div className="loader" role="status" aria-label="Loading">
+    ╰────
+  × the name `cn` is defined multiple times
+    ╭─[/home/runner/workspace/src/components/ui/loading-spinner.tsx:11:1]
+  8 │     </div>
+  9 │   )
+ 10 │ }
+ 11 │ import { cn } from "@/lib/utils"
+    ·          ─┬
+    ·           ╰── previous definition of `cn` here
+ 12 │ 
+ 13 │ export function LoadingSpinner({ className }: { className?: string }) {
+ 14 │   return (
+ 15 │     <div className={cn("flex items-center justify-center p-4", className)}>
+ 16 │       <div className="loader" role="status" aria-label="Loading">
+ 17 │         <span className="sr-only">Loading...</span>
+ 18 │       </div>
+ 19 │     </div>
+ 20 │   )
+ 21 │ }
+ 22 │ import { cn } from "@/lib/utils";
+    ·          ─┬
+    ·           ╰── `cn` redefined here
+ 23 │ 
+ 24 │ interface LoadingSpinnerProps {
+ 25 │   className?: string;
+    ╰────
+  × the name `LoadingSpinner` is defined multiple times
+    ╭─[/home/runner/workspace/src/components/ui/loading-spinner.tsx:13:1]
+ 10 │ }
+ 11 │ import { cn } from "@/lib/utils"
+ 12 │ 
+ 13 │ export function LoadingSpinner({ className }: { className?: string }) {
+    ·                 ───────┬──────
+    ·                        ╰── previous definition of `LoadingSpinner` here
+ 14 │   return (
+ 15 │     <div className={cn("flex items-center justify-center p-4", className)}>
+ 16 │       <div className="loader" role="status" aria-label="Loading">
+ 17 │         <span className="sr-only">Loading...</span>
+ 18 │       </div>
+ 19 │     </div>
+ 20 │   )
+ 21 │ }
+ 22 │ import { cn } from "@/lib/utils";
+ 23 │ 
