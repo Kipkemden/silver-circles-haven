@@ -15,6 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ForumPost from "@/components/ForumPost";
 import { useAuth } from "@/hooks/useAuth";
+import LoadingSpinner from "@/components/LoadingSpinner"; // Assuming this component exists
 
 // Mock data (can be replaced with real data from Supabase later)
 const upcomingMeeting = {
@@ -67,14 +68,7 @@ const DashboardPage = () => {
 
   // Handle loading and authentication states
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="h-12 w-36 bg-gray-200 rounded"></div> {/* Changed silver-200 to gray-200 */}
-          <div className="h-6 w-72 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner className="min-h-screen" />;
   }
 
   if (!isAuthenticated) {
@@ -97,19 +91,19 @@ const DashboardPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
+
       <main className="flex-grow pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-serif font-medium mb-2">
               Welcome, {user.name?.split(" ")[0] || "User"}
             </h1>
-            <p className="text-gray-600 mb-10"> {/* Changed silver-600 to gray-600 */}
+            <p className="text-gray-600 mb-10">
               Your {user.topic === "retirement" ? "Reinventing Retirement" : "Silver Singles"} circle is here to support you.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <Card className="md:col-span-2 border border-gray-200"> {/* Changed silver-200 to gray-200 */}
+              <Card className="md:col-span-2 border border-gray-200">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl flex items-center">
                     <Calendar className="mr-2 h-5 w-5 text-primary" />
@@ -120,11 +114,11 @@ const DashboardPage = () => {
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div className="mb-4 md:mb-0">
                       <h3 className="font-medium text-lg">{upcomingMeeting.topic}</h3>
-                      <div className="flex items-center text-gray-600 mt-1"> {/* Changed silver-600 to gray-600 */}
+                      <div className="flex items-center text-gray-600 mt-1">
                         <Users className="mr-2 h-4 w-4" />
                         <span>{upcomingMeeting.groupName}</span>
                       </div>
-                      <div className="flex items-center text-gray-600 mt-1"> {/* Changed silver-600 to gray-600 */}
+                      <div className="flex items-center text-gray-600 mt-1">
                         <Clock className="mr-2 h-4 w-4" />
                         <span>{formatMeetingDate(upcomingMeeting.date)}</span>
                       </div>
@@ -141,19 +135,19 @@ const DashboardPage = () => {
                     </Button>
                   </div>
                 </CardContent>
-                <CardFooter className="border-t pt-4 text-gray-500"> {/* Changed silver-500 to gray-500 */}
+                <CardFooter className="border-t pt-4 text-gray-500">
                   <p>A calendar invitation has been sent to your email with the meeting details.</p>
                 </CardFooter>
               </Card>
 
-              <Card className="border border-gray-200"> {/* Changed silver-200 to gray-200 */}
+              <Card className="border border-gray-200">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl flex items-center">
                     <MessageSquare className="mr-2 h-5 w-5 text-primary" />
                     Your Circle Forum
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-gray-600"> {/* Changed silver-600 to gray-600 */}
+                <CardContent className="text-gray-600">
                   <p>Connect with your circle members anytime in your private forum.</p>
                 </CardContent>
                 <CardFooter>
@@ -176,7 +170,7 @@ const DashboardPage = () => {
                     <TabsTrigger value="resources">Resources</TabsTrigger>
                   </TabsList>
                 </div>
-                
+
                 <TabsContent value="posts" className="mt-0">
                   {privatePosts.map((post) => (
                     <ForumPost key={post.id} post={post} isPublic={false} />
@@ -187,15 +181,15 @@ const DashboardPage = () => {
                     </Button>
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="resources" className="mt-0">
-                  <Card className="border border-gray-200 mb-6"> {/* Changed silver-200 to gray-200 */}
+                  <Card className="border border-gray-200 mb-6">
                     <CardHeader>
                       <CardTitle>Retirement Planning Guide</CardTitle>
                       <CardDescription>PDF Resource • Added Dec 15, 2023</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-600"> {/* Changed silver-600 to gray-600 */}
+                      <p className="text-gray-600">
                         A comprehensive guide to financial, emotional, and social aspects of retirement planning.
                       </p>
                     </CardContent>
@@ -203,8 +197,8 @@ const DashboardPage = () => {
                       <Button variant="outline">Download PDF</Button>
                     </CardFooter>
                   </Card>
-                  
-                  <Card className="border border-gray-200"> {/* Changed silver-200 to gray-200 */}
+
+                  <Card className="border border-gray-200">
                     <CardHeader>
                       <CardTitle>Circle Discussion Topics</CardTitle>
                       <CardDescription>Upcoming discussion themes for your circle</CardDescription>
@@ -230,11 +224,11 @@ const DashboardPage = () => {
               </Tabs>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200"> {/* Changed silver-50/200 to gray-50/200 */}
+            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
               <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <div className="mb-6 md:mb-0">
                   <h2 className="text-2xl font-serif mb-2">Enhance Your Experience</h2>
-                  <p className="text-gray-600 max-w-xl"> {/* Changed silver-600 to gray-600 */}
+                  <p className="text-gray-600 max-w-xl">
                     Book a 1:1 session with our expert facilitator for personalized guidance on your specific challenges.
                   </p>
                 </div>
