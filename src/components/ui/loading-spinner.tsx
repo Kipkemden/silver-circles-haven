@@ -6,17 +6,11 @@ interface LoadingSpinnerProps {
   message?: string;
 }
 
-export const LoadingSpinner = ({ className, message = "Loading..." }: LoadingSpinnerProps) => {
+export const LoadingSpinner = ({ className, message }: LoadingSpinnerProps) => {
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-2", className)}>
-      <div 
-        className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-        role="status"
-        aria-label="Loading"
-      >
-        <span className="sr-only">{message}</span>
-      </div>
-      {message && <p className="text-sm text-muted-foreground">{message}</p>}
+    <div className={cn("flex flex-col items-center justify-center", className)}>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      {message && <p className="mt-2 text-sm text-muted-foreground">{message}</p>}
     </div>
   );
 };
